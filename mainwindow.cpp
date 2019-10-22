@@ -471,7 +471,7 @@ void MainWindow::go_bee()
     int size=bufer_bee[idx].kol;
     regular_time=bufer_bee[idx].time;
     cl_time=regular_time;
-//    qDebug()<<"idx = "<<idx;
+    //    qDebug()<<"idx = "<<idx;
     const int beesToAppend = size - item_bees.size();
     for(int j=0;j<beesToAppend;++j){
         it_pix=scene->addPixmap(*picture[9]);
@@ -526,20 +526,20 @@ void MainWindow::go_bee()
                     dir_bee[beeIdx]=bufer_bee[idx].bee[bee_cadr].x-bufer_bee[idx+1].bee[bee_cadr].x;
                 }
             }
-//            if(((dir_bee[beeIdx]!=0)||(show_bee.size()>0))&&(flag_bee[beeIdx]==3)){
-//                //   qDebug()<<"ERROR ---- PICTURE ";
-//                if(hidden_bee.indexOf(beeIdx)!=-1){
-//                    //     qDebug()<<"REM ---- ERR"<<beeIdx;
-//                    // qDebug()<<"STAY_BEE ---- "<<show_bee.size();
-//                    hidden_bee.removeAt(hidden_bee.indexOf(beeIdx));
-//                }
-//                flag_bee[beeIdx]=1;
-//            }
+            //            if(((dir_bee[beeIdx]!=0)||(show_bee.size()>0))&&(flag_bee[beeIdx]==3)){
+            //                //   qDebug()<<"ERROR ---- PICTURE ";
+            //                if(hidden_bee.indexOf(beeIdx)!=-1){
+            //                    //     qDebug()<<"REM ---- ERR"<<beeIdx;
+            //                    // qDebug()<<"STAY_BEE ---- "<<show_bee.size();
+            //                    hidden_bee.removeAt(hidden_bee.indexOf(beeIdx));
+            //                }
+            //                flag_bee[beeIdx]=1;
+            //            }
 
             int sost=bufer_bee[idx].bee[bee_cadr].s;
             int x=bufer_bee[idx].bee[bee_cadr].x;
             int y=bufer_bee[idx].bee[bee_cadr].y;
-           //    qDebug()<< "sost ---- "<<sost<<"     bee_idx ---"<<beeIdx;
+            //    qDebug()<< "sost ---- "<<sost<<"     bee_idx ---"<<beeIdx;
 
             if(sost<=63){
                 dir_bee[beeIdx]=-20;
@@ -555,7 +555,7 @@ void MainWindow::go_bee()
                     item_pix[beeIdx]->setPixmap(*picture[9]);
                     item_pix[beeIdx]->setZValue(1);
                     hidden_bee.append(beeIdx);
-//                    bee_hide++;
+                    //                    bee_hide++;
 
                 }
                 sost-=192;
@@ -579,15 +579,33 @@ void MainWindow::go_bee()
                     item_bees[beeIdx]->hide();
                     flag_bee[beeIdx]=1;
                     hidden_bee.removeAt(hidden_bee.indexOf(beeIdx));
-//                    qDebug()<<"bee_show --- "<<bee_show<<"  hidden_bee.size() --- "<<hidden_bee.size()<<"size --- "<<size;
-//                    hidden_bee.clear();
                     hidden_bee.removeAt(hidden_bee.indexOf(beeIdx));
-//                    bee_hide--;
                 }
             }
-            item_bees[beeIdx]->setPos(x,y);
-
-
+            if(flag_bee[beeIdx]!=4)item_bees[beeIdx]->setPos(x,y);
+            if(flag_bee[beeIdx]==4){
+                if(idx ==10){
+                    if(bufer_bee[0].kol<bufer_bee[idx].kol){
+                        flag_bee[beeIdx]=3;
+                    }else{
+                        if(bufer_bee[idx].bee[bee_cadr].y != bufer_bee[0].bee[bee_cadr].y){
+                            flag_bee[beeIdx]=4;
+                        }else{
+                            flag_bee[beeIdx]=3;
+                        }
+                    }
+                }else{
+                    if(bufer_bee[idx+1].kol<bufer_bee[idx].kol){
+                        flag_bee[beeIdx]=3;
+                    }else{
+                        if(bufer_bee[idx].bee[bee_cadr].y != bufer_bee[idx+1].bee[bee_cadr].y){
+                            flag_bee[beeIdx]=4;
+                        }else{
+                            flag_bee[beeIdx]=3;
+                        }
+                    }
+                }
+            }
 
             bee_cadr++;
         }
