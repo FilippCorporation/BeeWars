@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
     patron[5]=ui->p6;
     patron[6]=ui->p7;
 
-
+//Hi
 
 
     List = nullptr;
