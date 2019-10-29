@@ -800,12 +800,7 @@ void MainWindow::set_pos(QPoint p, bool sost)
     {
         return;
     }
-    if(kol_pat == 1){
-        if(on_reloading == false)
-        {
-            on_reloading = true;
-        }
-    }
+
     if(sost){
         if(score>=cost_boom){
         Bombs bomb;
@@ -840,6 +835,12 @@ void MainWindow::set_pos(QPoint p, bool sost)
 
 
         if(f){
+            if(kol_pat == 1){
+                if(on_reloading == false)
+                {
+                    on_reloading = true;
+                }
+            }
             ///Добавить патроны?!
             //number_of_ammo--;
             if(kol_pat <= 7){
@@ -887,15 +888,7 @@ void MainWindow::set_pos(QPoint p, bool sost)
             *reinterpret_cast<quint16*> (ptr) = y; ptr += sizeof(quint16);
             client->udpSocket.writeDatagram(message_f09, address,port);
 
-            if(on_reloading == true)
-            {
-                number_of_ammo = 0;
-                ammo_function();
-                qDebug()<<"таймер пошел";
-                timer_1.start(1000);
-                set_pos(p,sost);
-                return;
-            }
+
 
             if(kill_bee[0]>=3){
                 timer_pr.stop();
@@ -923,7 +916,17 @@ void MainWindow::set_pos(QPoint p, bool sost)
             if(kill_bee[0] == 0){
                 effect[0].setVolume(100);
                 effect[0].play();}
+            if(on_reloading == true)
+            {
+                number_of_ammo = 0;
+                ammo_function();
+                qDebug()<<"таймер пошел";
+                timer_1.start(1000);
+                set_pos(p,sost);
+                return;
+            }
         }
+
     }
 }
 

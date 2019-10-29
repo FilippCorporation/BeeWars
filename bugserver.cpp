@@ -1067,10 +1067,7 @@ void BugServer::process_f09(const QByteArray &message, QNetworkDatagram dm){
         }
 
 
-    }
-
-
-    if(Player[idx].kol_pat<=1){
+    }else if(Player[idx].kol_pat<=1){
         Player[idx].kol_pat=7;
         //qDebug()<<"Not patron ------------------------------------------------------------------";
         fillMessage06();
@@ -1105,20 +1102,20 @@ void BugServer::process_f09(const QByteArray &message, QNetworkDatagram dm){
                         for(quint8 k = i, t_count=0, z = i+static_cast<quint8>(1u); k!=temp_currIdx ; ++t_count, incPlaneIdx(k)){
 
                             plane[k].bee[j].copyFrom(plane[i].bee[j],plane[i].bee[j].x,plane[i].bee[j].y,plane[i].bee[j].sost);
-                        if(fall == 1){
-                        Q_ASSERT(z!=k);
-                            if(/*plane[k].bee[j].fall*/localFall==2){
-                                plane[k].bee[j].fall = 2;
-                                const int heightDiff = hei-size_b - plane[z].bee[j].y;
-                                const quint16 downStep =  static_cast<quint16>((heightDiff > down_fall)? down_fall : heightDiff);
-                                if(plane[k].bee[j].y<hei-size_b){
-                                    plane[k].bee[j].y=plane[z].bee[j].y+downStep;
+                            if(fall == 1){
+                                Q_ASSERT(z!=k);
+                                if(/*plane[k].bee[j].fall*/localFall==2){
+                                    plane[k].bee[j].fall = 2;
+                                    const int heightDiff = hei-size_b - plane[z].bee[j].y;
+                                    const quint16 downStep =  static_cast<quint16>((heightDiff > down_fall)? down_fall : heightDiff);
+                                    if(plane[k].bee[j].y<hei-size_b){
+                                        plane[k].bee[j].y=plane[z].bee[j].y+downStep;
 
-                                }/*else {
+                                    }/*else {
                                     //plane[k].bee[j].fall=0;
                                 }*/}
-                            else{plane[k].bee[j].fall = localFall++;}
-                            z = k;
+                                else{plane[k].bee[j].fall = localFall++;}
+                                z = k;
                             }
                         }
                         plane[i].bee[j].setState(Make_bee::JustKilled);
@@ -1130,11 +1127,11 @@ void BugServer::process_f09(const QByteArray &message, QNetworkDatagram dm){
                         ++kill_bee[2];
 
                         break;
-}
+                    }
                     case Make_bee::Dead :{
                         ++kill_bee[3];
                         break;
-}
+                    }
                     }
                 }
             }
