@@ -92,7 +92,7 @@ private:
     QList<BuferBee>bufer_bee;
 
 //void keyPressEvent(QKeyEvent *event);
-    Chat *chat;
+    //Chat *chat;
 
     QImageReader *read_bee_right;
     QVector<QPixmap> bee_right;
@@ -137,6 +137,12 @@ private:
 
     int idx=0;
     int score=0;
+    //////////////////////////////////////////////нужна норм перезарядка на сервере!!!
+    int f10_time_show = 10; //время показа предупреждения, заменить в 10f (сек)
+    bool on_reloading = false;
+    int number_of_ammo = 7;
+    int pic_rand_ammo = 0;
+    /////////////////////////////////////////////
 
     int bee_hide=0;
     int bee_show=0;
@@ -146,7 +152,6 @@ private:
 
     int x,y;
     int muz=0;
-    int n=7;
     bool f=false;
     QSoundEffect effect[5];
     QLabel *patron[7];
@@ -177,7 +182,9 @@ private:
     QMediaPlayer player1;
     QString file[12];
     QTimer timer;
+    ///
     QTimer timer_1;
+    ///
     QTimer timer_pr;
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     QGraphicsSimpleTextItem *text_info;// = new QGraphicsSimpleTextItem();///Сделать добавление текста в сцену
@@ -218,7 +225,9 @@ private slots:
     void goto_xy();
     void add_server();
     void add_client();
-    void add_patron();
+    ///
+    void ammo_function();
+    ///
     void show_score();
     void send_message();
     void set_pos(QPoint p, bool sost);
