@@ -196,9 +196,9 @@ void BugServer::fillMessage06()
 
         *ptr=static_cast<const quint8>(Player[i].id_sesia);++ptr;
         *reinterpret_cast<qint32*> (ptr) = Player[i].s;ptr+=3;
-        if(Player[i].kol_pat<=0)Player[i].kol_pat=10;
-//        *ptr=static_cast<const quint8>(Player[i].kol_pat);++ptr;
-        qDebug()<<"player  "<<i<<"     patron = "<<Player[i].kol_pat;
+        //if(Player[i].kol_pat<=0)Player[i].kol_pat=10;
+        *ptr=static_cast<const quint8>(Player[i].kol_pat);++ptr;
+        //qDebug()<<"player  "<<i<<"     patron = "<<Player[i].kol_pat;
     }
 //    qDebug()<<"06 ---  "<<message_f06<<"    kol|pl -- "<<Player.size();
     for(int i=0;i<Player.size();i++){
@@ -888,15 +888,15 @@ void BugServer::close_pl()
     for(int i=0;i<Player.size();i++){
         ++Player[i].time_close;
 //        qDebug()<<"tic-tac"<<Player[i].time_close;
-        if(Player[i].time_close == 1160){
+        if(Player[i].time_close == 60){
             fillMessage10(Player[i].playDm,0);
         }
-        if(Player[i].time_close > 1220){
+        if(Player[i].time_close > 120){
             fillMessage10(Player[i].playDm,1);
-            Player.removeAt(i);
+          //
             fillMessage04();
             fillMessage06();
-//            Player[i].time_close=0;
+            Player[i].time_close=0;
         }
 
     }
@@ -1004,7 +1004,7 @@ void BugServer::process_f01(const QByteArray &message, QNetworkDatagram dm){
     pl.name = newPlayerName;
     pl.name_u8 = message.mid(3,strLength);
     pl.id_sesia = id_players;
-    pl.kol_pat=30;
+    pl.kol_pat=7;
     pl.playDm=dm;
     fillMessage02();
     Player.append(pl);
@@ -1071,7 +1071,7 @@ void BugServer::process_f09(const QByteArray &message, QNetworkDatagram dm){
 
 
     if(Player[idx].kol_pat<=0){
-        Player[idx].kol_pat=10;
+        Player[idx].kol_pat=7;
         //qDebug()<<"Not patron ------------------------------------------------------------------";
         fillMessage06();
     }else{
