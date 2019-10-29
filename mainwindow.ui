@@ -74,7 +74,7 @@ background-repeat:none;
        <string notr="true">#widget
 {
 background-color:transparent;
-border-image:url(://66.jpg);
+border-image:url(://red-skull.jpg);
 background: none;
 border:none;
 background-repeat:none;
