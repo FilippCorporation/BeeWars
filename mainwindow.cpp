@@ -10,8 +10,8 @@ MainWindow::MainWindow(QWidget *parent) :
     load_ap();
 
 
-    chat = new Chat(ui->textBrowser,ui->send_mes,25);
-    chat->createSmileButtons(ui->panel_smile);
+    //chat = new Chat(ui->textBrowser,ui->send_mes,25);
+    //chat->createSmileButtons(ui->panel_smile);
 
     connect(ui->toolButton,SIGNAL(clicked()),this,SLOT(hide_win()));
     connect(ui->toolButton_3,SIGNAL(clicked()),this,SLOT(add_server()));
@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&timer,SIGNAL(timeout()),this,SLOT(goto_xy()));
     connect(&time_bee,SIGNAL(timeout()),this,SLOT(go_pix()));
     connect(&time_go_bee,SIGNAL(timeout()),this,SLOT(go_bee()));
-    connect(&timer_1,SIGNAL(timeout()),this,SLOT(add_patron()));
+    connect(&timer_1,SIGNAL(timeout()),this,SLOT(ammo_function()));
     connect(ui->left,SIGNAL(clicked()),this,SLOT(muz_left()));
     connect(ui->right,SIGNAL(clicked()),this,SLOT(muz_right()));
     connect(ui->play,SIGNAL(clicked()),this,SLOT(muz_play()));
@@ -245,8 +245,7 @@ void MainWindow::process_f6(const QByteArray &message){
         }
         int kol_patron =*reinterpret_cast< const qint32*>(message.constData()+k);
         kol_patron&=0xFF000000;
-//        kol_patron>>=24;
-         qDebug()<<"kol-- -- --- "<<kol_patron;
+        kol_patron>>=24;
         k+=4;
         if(Gamer[i].id_sesia == id){
             Gamer[i].s=score;
@@ -256,10 +255,10 @@ void MainWindow::process_f6(const QByteArray &message){
             this->score=score;
             this->kol_pat=kol_patron;
         }
-
         QTreeWidgetItem *citi = new QTreeWidgetItem(List);
         citi->setText(0, Gamer[i].name);
         citi->setText(1, QString::number(Gamer[i].s,10));
+        qDebug()<<"kol_patron - "<<Gamer[i].kol_pat;
     }
     ui->score->setText(QString::number(score,10));
 
@@ -320,7 +319,7 @@ void MainWindow::process_f8(const QByteArray &message)
             k+=2;
             be.y =*reinterpret_cast<const quint16*>(message.constData()+k);
             k+=2;
-//            qDebug()<<"Bx --- "<<be.x<<" By --- "<<be.y<<" IDX_bufer --- "<<j<<"BEE_idx --- "<<beeIdx;
+            //qDebug()<<"Bx --- "<<be.x<<" By --- "<<be.y<<" IDX_bufer --- "<<j<<"BEE_idx --- "<<beeIdx;
             bees.bee.append(be);
         }
         //        qDebug()<<endl;
@@ -373,7 +372,7 @@ void MainWindow::process_f10(const QByteArray &message)
         //ui->exit->click();
     }else {
         text_info->setVisible(true);
-        sch_process_10 = 10001;
+        sch_process_10 = (f10_time_show*1000)+1;
         if(timer_proc_10.isActive())
         {
             //timer_proc_10.stop();
@@ -390,7 +389,7 @@ void MainWindow::for_10(QPoint coord)
 {
 //    qDebug()<<"coord of sight == "<<coord;
     coord_of_sight = coord;
-    if(sch_process_10 <= 10000){
+    if(sch_process_10 <= (f10_time_show*1000)){
         //text_info->setPos(ui->centralWidget->cursor().pos().x(), ui->centralWidget->cursor().pos().y()-10);
         text_info->setX(coord_of_sight.x()-150);
         text_info->setY(coord_of_sight.y()+40);
@@ -404,7 +403,7 @@ void MainWindow::for_10_timer()
     if(sch_process_10 <=0)
     {
         timer_proc_10.stop();
-        sch_process_10 = 10001;
+        sch_process_10 = (f10_time_show*100)+1;
         text_info->setVisible(false);
 //        qDebug()<<"Timer stopped";
     }
@@ -459,7 +458,7 @@ void MainWindow::process_f0c(const QByteArray &message)
         if(id_mes==Gamer[i].id_sesia){
             QString name_pl=Gamer[i].name;
 //            ui->textBrowser->append(name_pl+": "+text_player);
-            chat->appendMessage(name_pl+": "+text_player);
+            //chat->appendMessage(name_pl+": "+text_player);
         }
     }
 }
@@ -471,7 +470,7 @@ void MainWindow::go_bee()
     int size=bufer_bee[idx].kol;
     regular_time=bufer_bee[idx].time;
     cl_time=regular_time;
-    //    qDebug()<<"idx = "<<idx;
+//    qDebug()<<"idx = "<<idx;
     const int beesToAppend = size - item_bees.size();
     for(int j=0;j<beesToAppend;++j){
         it_pix=scene->addPixmap(*picture[9]);
@@ -526,20 +525,20 @@ void MainWindow::go_bee()
                     dir_bee[beeIdx]=bufer_bee[idx].bee[bee_cadr].x-bufer_bee[idx+1].bee[bee_cadr].x;
                 }
             }
-            //            if(((dir_bee[beeIdx]!=0)||(show_bee.size()>0))&&(flag_bee[beeIdx]==3)){
-            //                //   qDebug()<<"ERROR ---- PICTURE ";
-            //                if(hidden_bee.indexOf(beeIdx)!=-1){
-            //                    //     qDebug()<<"REM ---- ERR"<<beeIdx;
-            //                    // qDebug()<<"STAY_BEE ---- "<<show_bee.size();
-            //                    hidden_bee.removeAt(hidden_bee.indexOf(beeIdx));
-            //                }
-            //                flag_bee[beeIdx]=1;
-            //            }
+//            if(((dir_bee[beeIdx]!=0)||(show_bee.size()>0))&&(flag_bee[beeIdx]==3)){
+//                //   qDebug()<<"ERROR ---- PICTURE ";
+//                if(hidden_bee.indexOf(beeIdx)!=-1){
+//                    //     qDebug()<<"REM ---- ERR"<<beeIdx;
+//                    // qDebug()<<"STAY_BEE ---- "<<show_bee.size();
+//                    hidden_bee.removeAt(hidden_bee.indexOf(beeIdx));
+//                }
+//                flag_bee[beeIdx]=1;
+//            }
 
             int sost=bufer_bee[idx].bee[bee_cadr].s;
             int x=bufer_bee[idx].bee[bee_cadr].x;
             int y=bufer_bee[idx].bee[bee_cadr].y;
-            //    qDebug()<< "sost ---- "<<sost<<"     bee_idx ---"<<beeIdx;
+           //    qDebug()<< "sost ---- "<<sost<<"     bee_idx ---"<<beeIdx;
 
             if(sost<=63){
                 dir_bee[beeIdx]=-20;
@@ -555,7 +554,7 @@ void MainWindow::go_bee()
                     item_pix[beeIdx]->setPixmap(*picture[9]);
                     item_pix[beeIdx]->setZValue(1);
                     hidden_bee.append(beeIdx);
-                    //                    bee_hide++;
+//                    bee_hide++;
 
                 }
                 sost-=192;
@@ -579,33 +578,15 @@ void MainWindow::go_bee()
                     item_bees[beeIdx]->hide();
                     flag_bee[beeIdx]=1;
                     hidden_bee.removeAt(hidden_bee.indexOf(beeIdx));
+//                    qDebug()<<"bee_show --- "<<bee_show<<"  hidden_bee.size() --- "<<hidden_bee.size()<<"size --- "<<size;
+//                    hidden_bee.clear();
                     hidden_bee.removeAt(hidden_bee.indexOf(beeIdx));
+//                    bee_hide--;
                 }
             }
-            if(flag_bee[beeIdx]!=4)item_bees[beeIdx]->setPos(x,y);
-            if(flag_bee[beeIdx]==4){
-                if(idx ==10){
-                    if(bufer_bee[0].kol<bufer_bee[idx].kol){
-                        flag_bee[beeIdx]=3;
-                    }else{
-                        if(bufer_bee[idx].bee[bee_cadr].y != bufer_bee[0].bee[bee_cadr].y){
-                            flag_bee[beeIdx]=4;
-                        }else{
-                            flag_bee[beeIdx]=3;
-                        }
-                    }
-                }else{
-                    if(bufer_bee[idx+1].kol<bufer_bee[idx].kol){
-                        flag_bee[beeIdx]=3;
-                    }else{
-                        if(bufer_bee[idx].bee[bee_cadr].y != bufer_bee[idx+1].bee[bee_cadr].y){
-                            flag_bee[beeIdx]=4;
-                        }else{
-                            flag_bee[beeIdx]=3;
-                        }
-                    }
-                }
-            }
+            item_bees[beeIdx]->setPos(x,y);
+
+
 
             bee_cadr++;
         }
@@ -754,10 +735,76 @@ void MainWindow::set_bax()
         }
     }
 }
+
+void MainWindow::ammo_function(){
+
+    if(number_of_ammo < 7)
+    {
+
+        switch (pic_rand_ammo) {
+            case 0:
+                ui->graphicsView->setCursor(QPixmap(QString("://перезарядка.png")));
+                break;
+            case 1:
+                ui->graphicsView->setCursor(QPixmap(QString("://перезарядка1.png")));
+                break;
+            case 2:
+                ui->graphicsView->setCursor(QPixmap(QString("://перезарядка2.png")));
+                break;
+        }
+        if(pic_rand_ammo < 3)
+        {
+            pic_rand_ammo++;
+        }
+        else{
+            pic_rand_ammo = 0;
+        }
+
+        on_reloading = true;
+        number_of_ammo++;
+        patron[number_of_ammo-1]->show();
+        //patron[number_of_ammo-1]->show();
+        //kol_pat++;
+        if(!effect[4].isPlaying()){
+            effect[4].play();
+        }
+        qDebug()<<"Идет перезарядка - "<<kol_pat;
+    }
+    else if(number_of_ammo == 7){
+        //kol_pat = 7;
+        effect[4].stop();
+        timer_1.stop();
+        ui->graphicsView->setCursor(QPixmap(QString("://прицел_1.png")));
+        on_reloading = false;
+        qDebug()<<"перезарядка закончилась";
+    }else {
+        return;
+    }
+    /*if(number_of_ammo<7){
+        patron[number_of_ammo]->show();
+        number_of_ammo++;
+        if(!effect[4].isPlaying()) effect[4].play();
+    }else{
+        effect[4].stop();
+        timer_1.stop();
+        f=true;
+        //        ui->graphicsView->setCursor(Qt::CrossCursor);
+        //        ui->graphicsView->setCursor(QPixmap(QString("://курсор_1.png")));
+        ui->graphicsView->setCursor(QPixmap(QString("://прицел_1.png")));
+    }*/
+}
+
 void MainWindow::set_pos(QPoint p, bool sost)
 {
-    if(kol_pat == 0){
-//        return;
+    if(on_reloading == true)
+    {
+        return;
+    }
+    if(kol_pat == 1){
+        if(on_reloading == false)
+        {
+            on_reloading = true;
+        }
     }
     if(sost){
         if(score>=cost_boom){
@@ -792,7 +839,13 @@ void MainWindow::set_pos(QPoint p, bool sost)
     {
 
 
-        if(f){///Добавить патроны?!
+        if(f){
+            ///Добавить патроны?!
+            //number_of_ammo--;
+            if(kol_pat <= 7){
+                patron[kol_pat-1]->hide();
+            }
+
             this->x=p.x();
             this->y=p.y();
             quint8 time_cl=regular_time;
@@ -833,6 +886,17 @@ void MainWindow::set_pos(QPoint p, bool sost)
             *reinterpret_cast<quint16*> (ptr) = x; ptr += sizeof(quint16);
             *reinterpret_cast<quint16*> (ptr) = y; ptr += sizeof(quint16);
             client->udpSocket.writeDatagram(message_f09, address,port);
+
+            if(on_reloading == true)
+            {
+                client->udpSocket.writeDatagram(message_f09, address,port);
+                number_of_ammo = 0;
+                ammo_function();
+                qDebug()<<"таймер пошел";
+                timer_1.start(1000);
+                set_pos(p,sost);
+                return;
+            }
 
             if(kill_bee[0]>=3){
                 timer_pr.stop();
@@ -1360,22 +1424,7 @@ void MainWindow::active(){
     }
 }
 
-void MainWindow::add_patron(){
 
-    if(n<7){
-        patron[n]->show();
-        n++;
-        if(!effect[4].isPlaying()) effect[4].play();
-    }else{
-
-        effect[4].stop();
-        timer_1.stop();
-        f=true;
-        //        ui->graphicsView->setCursor(Qt::CrossCursor);
-        //        ui->graphicsView->setCursor(QPixmap(QString("://курсор_1.png")));
-        ui->graphicsView->setCursor(QPixmap(QString("://прицел_1.png")));
-    }
-}
 
 void MainWindow::goto_xy(){
 
@@ -1491,7 +1540,7 @@ void MainWindow::close_do()
     player.stop();
 
     muz=0;
-    n=7;
+    number_of_ammo=7;
 
     ui->widget_2->hide();
     //    ui->graphicsView->setCursor(Qt::CrossCursor);
