@@ -4,7 +4,7 @@
 #include<QGraphicsItem>
 #include<QGraphicsPixmapItem>
 
-//Бомбы
+
 class Bombs
 {
 public:
