@@ -43,6 +43,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->label_8->hide();
 
 
+
+
     patron[0]=ui->p1;
     patron[1]=ui->p2;
     patron[2]=ui->p3;
@@ -50,6 +52,11 @@ MainWindow::MainWindow(QWidget *parent) :
     patron[4]=ui->p5;
     patron[5]=ui->p6;
     patron[6]=ui->p7;
+
+
+    music->setMedia(QUrl::fromLocalFile(sndPath+"theme.mp3"));
+    music->setVolume(70);
+    music->play();
 
 
 
@@ -79,6 +86,8 @@ MainWindow::MainWindow(QWidget *parent) :
     text_info->setZValue(5);
     text_info->setBrush(*brush_for_text_info);
     text_info->setPen(QColor(Qt::red));
+    text_info->setX(0);
+    text_info->setY(0);
     scene->addItem(text_info);
     setMouseTracking(true);
 
@@ -109,6 +118,7 @@ QByteArray MainWindow:: process_f1(){
 
 void MainWindow::process_f2(const QByteArray &message)
 {
+    qDebug()<<"process02";
 
 
     if(message.size() < 2) return ;
@@ -130,6 +140,7 @@ void MainWindow::process_f2(const QByteArray &message)
 
         ui->widget->hide();
         ui->widget_2->show();
+        music->stop();
 
         show_win();
 
@@ -175,23 +186,6 @@ void MainWindow::process_f2(const QByteArray &message)
 
 
     }
-
-
-
-    //const int strLength (*reinterpret_cast<const quint8*>(message.constData() + sizeof(quint8)) );
-    //if (message.size() < (2 + strLength)) return;
-    // const int hei (*reinterpret_cast<const quint32*>(message.constData() + sizeof(quint32)));
-    //qDebug()<<"---------------------------------------hei--";
-    //   for(int i=0;i<Player.size();i++){
-    //   if((Player[i].name==newPlayerName)||(newPlayerName.toLower()=="admin")
-    //           ||(newPlayerName.toLower()=="админ")||(newPlayerName.toLower()=="администратор")
-    //           ||(newPlayerName.toLower()=="server")||(newPlayerName.toLower()=="сервер")){
-    //       fillMessage02_error();
-    //       pSender->sendBinaryMessage(message_f02);
-    //       return;}
-    //   }
-
-    //return message;
 }
 
 QByteArray MainWindow::process_f3()
@@ -259,6 +253,7 @@ void MainWindow::process_f6(const QByteArray &message){
         citi->setText(0, Gamer[i].name);
         citi->setText(1, QString::number(Gamer[i].s,10));
         qDebug()<<"kol_patron - "<<Gamer[i].kol_pat;
+        qDebug()<<"gamers - "<<Gamer.size();
     }
     ui->score->setText(QString::number(score,10));
 
@@ -387,10 +382,8 @@ void MainWindow::process_f10(const QByteArray &message)
 }
 void MainWindow::for_10(QPoint coord)
 {
-//    qDebug()<<"coord of sight == "<<coord;
     coord_of_sight = coord;
     if(sch_process_10 <= (f10_time_show*1000)){
-        //text_info->setPos(ui->centralWidget->cursor().pos().x(), ui->centralWidget->cursor().pos().y()-10);
         text_info->setX(coord_of_sight.x()-150);
         text_info->setY(coord_of_sight.y()+40);
     }
@@ -465,6 +458,30 @@ void MainWindow::process_f0c(const QByteArray &message)
 
 void MainWindow::go_bee()
 {
+    if(on_reloading == true)
+    {
+        switch (pic_rand_ammo) {
+        case 0:
+            ui->graphicsView->setCursor(QPixmap(QString("://перезарядка1.png")));
+            break;
+        case 1:
+            ui->graphicsView->setCursor(QPixmap(QString("://перезарядка2.png")));
+            break;
+        case 2:
+            ui->graphicsView->setCursor(QPixmap(QString("://перезарядка3.png")));
+            break;
+        case 3:
+            ui->graphicsView->setCursor(QPixmap(QString("://перезарядка.png")));
+            break;
+        }
+        if(pic_rand_ammo < 4)
+        {
+            pic_rand_ammo++;
+        }
+        else{
+            pic_rand_ammo = 0;
+        }
+    }
 
     if(idx>10){idx=0;}
     int size=bufer_bee[idx].kol;
@@ -710,6 +727,7 @@ void MainWindow::set_bax()
         timer_bax.stop();
         return;
     }
+
     for(int i=0;i<bombs.size();i++){
         if((bombs[i].status_bax<boom.size())&&(bombs[i].active_boom)){
             bombs[i].it_pix_bax->show();
@@ -727,6 +745,9 @@ void MainWindow::set_bax()
                 if(bombs[i].status_bax<read->imageCount()){
                     bombs[i].it_pix_bax->setPixmap(max_boom[bombs[i].status_bax]);
                     bombs[i].status_bax++;
+                    if(!effect[3].isPlaying()){
+                       effect[3].play();
+                    }
                 }else {
                     scene->removeItem(bombs[i].it_bax);
                     bombs.removeAt(i);
@@ -737,29 +758,8 @@ void MainWindow::set_bax()
 }
 
 void MainWindow::ammo_function(){
-
     if(number_of_ammo < 7)
     {
-
-        switch (pic_rand_ammo) {
-            case 0:
-                ui->graphicsView->setCursor(QPixmap(QString("://перезарядка.png")));
-                break;
-            case 1:
-                ui->graphicsView->setCursor(QPixmap(QString("://перезарядка1.png")));
-                break;
-            case 2:
-                ui->graphicsView->setCursor(QPixmap(QString("://перезарядка2.png")));
-                break;
-        }
-        if(pic_rand_ammo < 3)
-        {
-            pic_rand_ammo++;
-        }
-        else{
-            pic_rand_ammo = 0;
-        }
-
         on_reloading = true;
         number_of_ammo++;
         patron[number_of_ammo-1]->show();
@@ -770,7 +770,7 @@ void MainWindow::ammo_function(){
         }
         qDebug()<<"Идет перезарядка - "<<kol_pat;
     }
-    else if(number_of_ammo == 7){
+else if(number_of_ammo == 7){
         //kol_pat = 7;
         effect[4].stop();
         timer_1.stop();
@@ -780,18 +780,6 @@ void MainWindow::ammo_function(){
     }else {
         return;
     }
-    /*if(number_of_ammo<7){
-        patron[number_of_ammo]->show();
-        number_of_ammo++;
-        if(!effect[4].isPlaying()) effect[4].play();
-    }else{
-        effect[4].stop();
-        timer_1.stop();
-        f=true;
-        //        ui->graphicsView->setCursor(Qt::CrossCursor);
-        //        ui->graphicsView->setCursor(QPixmap(QString("://курсор_1.png")));
-        ui->graphicsView->setCursor(QPixmap(QString("://прицел_1.png")));
-    }*/
 }
 
 void MainWindow::set_pos(QPoint p, bool sost)
@@ -846,6 +834,10 @@ void MainWindow::set_pos(QPoint p, bool sost)
             if(kol_pat <= 7){
                 patron[kol_pat-1]->hide();
             }
+            if(!effect[5].isPlaying()){
+                effect[5].play();
+            }
+
 
             this->x=p.x();
             this->y=p.y();
@@ -905,17 +897,18 @@ void MainWindow::set_pos(QPoint p, bool sost)
                 status_boom=0;
                 it_boom->setPos(x-50,y-50);
                 timer_pr.start(60);
-                effect[2].setVolume(100);
-                effect[2].play();
+                effect[7].setVolume(100);
+                effect[7].play();
             }
             if(kill_bee[0]==1){
-                effect[1].setVolume(100);
-                effect[1].play();
+                effect[6].setVolume(100);
+                effect[6].play();
             }
 
             if(kill_bee[0] == 0){
                 effect[0].setVolume(100);
-                effect[0].play();}
+                effect[0].play();
+            }
             if(on_reloading == true)
             {
                 number_of_ammo = 0;
@@ -1301,6 +1294,7 @@ void MainWindow::add_server()
     ui->widget->hide();
     ui->treeWidget->clear();
     ui->server_menu->show();
+    music->stop();
 
 }
 
@@ -1309,6 +1303,7 @@ void MainWindow::add_client()
     create_server = false;
     create_client = true;
     fun_helper();
+
     //    client = new BugClient(/*QHostAddress::LocalHost,49152*/QHostAddress(ui->ip->text()),ui->spinBox_4->value());
     //    connect(client,SIGNAL(mySignal(int)),this,SLOT(setSignal(int)));
     //    connect(client.data()->webSocket,SIGNAL(textMessageReceived(QString)),this->chat,SLOT(appendMessage(QString)));
@@ -1320,6 +1315,9 @@ void MainWindow::hide_win()
     create_server = true;
     create_client = true;
     fun_helper();
+
+    music->stop();
+
     //    qDebug()<<"server creator";
     //    server = new BugServer(ui->spinBox_4->value()/*,ui->spinBox->value(),ui->spinBox_2->value(),ui->spinBox_3->value()*/);
     //    //client = new BugClient(ui->spinBox_4->value(),ui->ip->text());
@@ -1577,6 +1575,7 @@ void MainWindow::_close()
 
 void MainWindow::show_win()
 {
+
     if(ui->radioButton->isChecked()){
 
         QIcon icon("://icon.png");
@@ -1596,12 +1595,17 @@ void MainWindow::show_win()
         player.setMedia(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/g.mp3"));
         player.setVolume(50);//40
 
-        effect[0].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/shot_miss0.wav"));
-        effect[1].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/shot_down.wav"));
-        effect[2].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/great_shot.wav"));
-        effect[3].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/mega_shot.wav"));
-        effect[4].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/reload.wav"));
-        for(int i=0;i<5;i++) effect[i].setVolume(100);
+
+        effect[0].setSource(QUrl::fromLocalFile(sndPath+"/shot_miss0.wav"));
+        effect[1].setSource(QUrl::fromLocalFile(sndPath+"/shot_down.wav"));
+        effect[2].setSource(QUrl::fromLocalFile(sndPath+"/great_shot.wav"));
+        effect[3].setSource(QUrl::fromLocalFile(sndPath+"/mega_shot.wav"));
+        effect[4].setSource(QUrl::fromLocalFile(sndPath+"/reload.wav"));
+        effect[5].setSource(QUrl::fromLocalFile(sndPath+"vistrel.wav"));
+        effect[6].setSource(QUrl::fromLocalFile(sndPath+"smert_pcheli.wav"));
+        effect[7].setSource(QUrl::fromLocalFile(sndPath+"big_smert.wav"));
+
+        for(int i=0;i<8;i++) effect[i].setVolume(100);
 
 
         for(int i=0;i<6;i++){
@@ -1626,12 +1630,16 @@ void MainWindow::show_win()
         player.setMedia(QUrl::fromLocalFile("://r.mp3"));
         player.setVolume(50);//40
 
-        effect[0].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/промах.wav"));
-        effect[1].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/5.wav"));
-        effect[2].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/10.wav"));
-        effect[3].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/20.wav"));
-        effect[4].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/reload.wav"));
-        for(int i=0;i<5;i++) effect[i].setVolume(100);
+        effect[0].setSource(QUrl::fromLocalFile(sndPath+"промах.wav"));
+        effect[1].setSource(QUrl::fromLocalFile(sndPath+"5.wav"));
+        effect[2].setSource(QUrl::fromLocalFile(sndPath+"10.wav"));
+        effect[3].setSource(QUrl::fromLocalFile(sndPath+"20.wav"));
+        effect[4].setSource(QUrl::fromLocalFile(sndPath+"reload.wav"));
+        effect[5].setSource(QUrl::fromLocalFile(sndPath+"vistrel.wav"));
+        effect[6].setSource(QUrl::fromLocalFile(sndPath+"smert_pcheli.wav"));
+        effect[7].setSource(QUrl::fromLocalFile(sndPath+"big_smert.wav"));
+
+        for(int i=0;i<8;i++) effect[i].setVolume(100);
 
         for(int i=0;i<6;i++){
             play[i] .setMedia(QUrl::fromLocalFile(QApplication::applicationDirPath()+QString("/fon1/%1.mp3").arg(i+1)));

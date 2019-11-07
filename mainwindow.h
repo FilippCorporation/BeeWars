@@ -117,6 +117,8 @@ private:
     QVector<QPixmap> max_boom;
     QTreeWidget *List;
 
+    const QString sndPath = QApplication::applicationDirPath()+QDir::separator()+QStringLiteral("sounds")+QDir::separator();
+
 
     bool create_server = false;
     bool create_client = false;
@@ -153,7 +155,7 @@ private:
     int x,y;
     int muz=0;
     bool f=false;
-    QSoundEffect effect[5];
+    QSoundEffect effect[8];
     QLabel *patron[7];
 
     QGraphicsPixmapItem* it_pix;
@@ -162,6 +164,8 @@ private:
     QList<QGraphicsPixmapItem*>item_pix;
     QList<int>status_bee;
     quint8 regular_time;
+
+    QMediaPlayer *music = new QMediaPlayer();
 
     QList<Players>Gamer;
 
@@ -191,12 +195,11 @@ private:
 
     QPoint coord_of_sight;
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    int sch_process_10 = 501;
+    int sch_process_10 = (f10_time_show*1000)+1;////////////////////////////BOT ETO///////////////////////////////////////////////////////
     int bx=0,by=0;
     QTimer timer_bax;
     QPixmap *picture[12];
     QMutex argMutex;
-    bool u=false;
     void do_pix();
 //    void gameover();
     void close_do();
@@ -207,7 +210,7 @@ private:
 
 private slots:
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    void for_10(QPoint);
+    void for_10(QPoint p);
     void for_10_timer();
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     void go_bee();
