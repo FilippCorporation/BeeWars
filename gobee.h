@@ -7,7 +7,7 @@ class GoBee
 {
 public:
     GoBee();
-    int n, s, x, y;
+    int n, s, x, y, old_x, old_y;
     int time_hide = 150;
 };
 

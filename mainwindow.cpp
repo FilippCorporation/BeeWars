@@ -29,12 +29,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->volue,SIGNAL(clicked()),this,SLOT(muz_volue()));
     connect(ui->send,SIGNAL(clicked()),this,SLOT(send_message()));
     connect(&timer_pr,SIGNAL(timeout()),this,SLOT(set_pix()));
-    connect(&timer_bax,SIGNAL(timeout()),this,SLOT(set_bax()));
+    connect(&timer_bax,SIGNAL(timeout()),this,SLOT(set_bax()));    
+    connect(&timer_close,SIGNAL(timeout()),this,SLOT(close_me()));
     connect(ui->server_off,SIGNAL(clicked()),this,SLOT(close_serv()));
     connect(ui->problems,SIGNAL(clicked()),this,SLOT(Problem()));
     connect(ui->treeWidget,SIGNAL(itemClicked(QTreeWidgetItem*,int)),this,SLOT(close_players(QTreeWidgetItem*,int)));
     connect(ui->send_mes,SIGNAL(returnPressed()),this,SLOT(send_message()));
-    connect(&timer_proc_10,SIGNAL(timeout()),this,SLOT(for_10_timer()));
+
 
     ui->label_15->hide();
     ui->label_16->hide();
@@ -57,9 +58,11 @@ MainWindow::MainWindow(QWidget *parent) :
     List = nullptr;
     read = nullptr;
     read_bomb = nullptr;
+    read_reload = nullptr;
     scene = new Play_table();
     server = nullptr;
     client = nullptr;
+    text_info = nullptr;
     ui->widget_2->hide();
     ui->server_menu->hide();
     QPalette sample_palette;
@@ -73,13 +76,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->play->setStyleSheet("#play\n{\nbackground-color:transparent;\nborder-image:url(:/пауза.png);\nbackground: none;\nborder:none;\nbackground-repeat:none;\n}\n#play:pressed\n{\nborder-image:url(:/пауза_н.png);\nbackground-repeat:none;\n}");
     QIcon icon(":/клякса1.png");
     this->setWindowIcon(icon);
-    QBrush *brush_for_text_info = new QBrush(QColor(255,0,0));
-    text_info = new QGraphicsSimpleTextItem();
-    text_info->setVisible(false);
-    text_info->setZValue(5);
-    text_info->setBrush(*brush_for_text_info);
-    text_info->setPen(QColor(Qt::red));
-    scene->addItem(text_info);
+
     setMouseTracking(true);
 
 }
@@ -118,7 +115,7 @@ void MainWindow::process_f2(const QByteArray &message)
         hei =*reinterpret_cast<const quint16*>(message.constData()+6);
         be_w =*reinterpret_cast<const quint8*>(message.constData()+8);
         be_h =*reinterpret_cast<const quint8*>(message.constData()+9);
-        fall =*reinterpret_cast<const quint8*>(message.constData()+10);
+        fall =*reinterpret_cast<const qint8*>(message.constData()+10);
         kol_pat =*reinterpret_cast<const quint8*>(message.constData()+11);
         time_rep =*reinterpret_cast<const quint8*>(message.constData()+12);
         cost_boom =*reinterpret_cast<const quint8*>(message.constData()+13);
@@ -127,6 +124,14 @@ void MainWindow::process_f2(const QByteArray &message)
         s_p =*reinterpret_cast<const qint8*>(message.constData()+16);
         s_m =*reinterpret_cast<const qint8*>(message.constData()+17);
         id =*reinterpret_cast<const quint8*>(message.constData()+18);
+
+        QBrush *brush_for_text_info = new QBrush(QColor(255,0,0));
+        text_info = new QGraphicsSimpleTextItem();
+        text_info->setVisible(false);
+        text_info->setZValue(5);
+        text_info->setBrush(*brush_for_text_info);
+        text_info->setPen(QColor(Qt::red));
+        scene->addItem(text_info);
 
         ui->widget->hide();
         ui->widget_2->show();
@@ -153,7 +158,7 @@ void MainWindow::process_f2(const QByteArray &message)
 
         //        ui->graphicsView->setCursor(Qt::CrossCursor);
         //        ui->graphicsView->setCursor(QPixmap(QString("://курсор_1.png")));
-        ui->graphicsView->setCursor(QPixmap(QString("://прицел_1.png")));
+        ui->graphicsView->setCursor(QPixmap(QString("://sight_1.png")));
         ui->graphicsView->setCacheMode(QGraphicsView::CacheBackground);
 
         player.play();
@@ -169,6 +174,7 @@ void MainWindow::process_f2(const QByteArray &message)
         time_bee.start(25);
 
     }else{
+        close_do();
         QString warning=message.mid(3);
         //qDebug()<<"error ---- "<<warning;
         ui->message_text->setText(warning);
@@ -245,29 +251,45 @@ void MainWindow::process_f6(const QByteArray &message){
         }
         int kol_patron =*reinterpret_cast< const qint32*>(message.constData()+k);
         kol_patron&=0xFF000000;
-//        kol_patron>>=24;
-         qDebug()<<"kol-- -- --- "<<kol_patron;
+        kol_patron>>=24;
+        //         qDebug()<<"kol-- -- --- "<<kol_patron;
         k+=4;
+//        qDebug()<<"Пришло id --- "<<id<<" Player "<<i<<" --- id ==="<<Gamer[i].id_sesia<<"  score --- "<<score<<" My id --- "<<this->id;
+        if(id == this->id){
+            this->score=score;
+            kol_pat=kol_patron;
+            if((kol_patron<n)&&(f)){
+                n--;
+                patron[n]->hide();
+            }
+            ui->score->setText(QString::number(score,10));
+        }
         if(Gamer[i].id_sesia == id){
             Gamer[i].s=score;
             Gamer[i].kol_pat=kol_patron;
+        }else{
+            for(int j=0; j<Gamer.size();j++){
+                if(Gamer[j].id_sesia == id){
+                    Gamer[j].s=score;
+                    Gamer[j].kol_pat=kol_patron;
+                    break;
+                }
+            }
         }
-        if(Gamer[i].id_sesia == this->id){
-            this->score=score;
-            this->kol_pat=kol_patron;
-        }
-
         QTreeWidgetItem *citi = new QTreeWidgetItem(List);
         citi->setText(0, Gamer[i].name);
         citi->setText(1, QString::number(Gamer[i].s,10));
     }
-    ui->score->setText(QString::number(score,10));
+
 
 
 }
 
 void MainWindow::process_f8(const QByteArray &message)
 {
+
+
+
     if(message.size() < 2) return;
     if(on_cl_time){
         cl_time = *reinterpret_cast<const quint8*>(message.constData()+2);
@@ -290,20 +312,20 @@ void MainWindow::process_f8(const QByteArray &message)
     if(idx_bufer>=dif){
         p=idx_bufer-dif;
     }else{
-        p=11-dif+idx_bufer;
+        p=bufer_size-dif+idx_bufer;
     }
     if(dif>=8){
         p=0;
-        bufer_bee.clear();
+//        bufer_bee.clear();
         idx=0;
     }
-//        qDebug()<<"cl_t --- "<<cl_time<<"   pos_t --- "<<time<<endl;
-//        qDebug()<<"p --- "<<p<<" idx --- "<<idx<<"dif --- "<<dif<<endl;
-//        qDebug()<<"DIF ---- "<<dif<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+//            qDebug()<<"cl_t --- "<<cl_time<<"   pos_t --- "<<time<<endl;
+//            qDebug()<<"p --- "<<p<<" idx --- "<<idx<<"dif --- "<<dif<<endl;
+//            qDebug()<<"DIF ---- "<<dif<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
 
     int k=3;
     for(int i=0,j=p;i<10;i++,j++){
-        if(j>10){ j=0;}
+        if(j>bufer_size-1){ j=0;}
         const int size= *reinterpret_cast<const quint8*>(message.constData()+k);
         k++;
         BuferBee bees;
@@ -320,17 +342,18 @@ void MainWindow::process_f8(const QByteArray &message)
             k+=2;
             be.y =*reinterpret_cast<const quint16*>(message.constData()+k);
             k+=2;
-//            qDebug()<<"Bx --- "<<be.x<<" By --- "<<be.y<<" IDX_bufer --- "<<j<<"BEE_idx --- "<<beeIdx;
+//                        qDebug()<<"Bx --- "<<be.x<<" By --- "<<be.y<<" IDX_bufer --- "<<j<<"BEE_idx --- "<<beeIdx;
             bees.bee.append(be);
         }
-        //        qDebug()<<endl;
+//             qDebug()<<endl;
+             bufer_bee[j]=bees;
 
-        if(bufer_bee.size()<11){
-            bufer_bee.append(bees);
-        }
-        else{
-            bufer_bee[j]=bees;
-        }
+//        if(bufer_bee.size()<31){
+//            bufer_bee.append(bees);
+//        }
+//        else{
+//            bufer_bee[j]=bees;
+//        }
 
     }
     if(!time_go_bee.isActive()){time_go_bee.start(50);}
@@ -346,69 +369,55 @@ void MainWindow::process_f0a(const QByteArray &message)
     const int y=*reinterpret_cast<const quint16*>(message.constData()+7);
     const quint8 time_active = *reinterpret_cast<const quint8*>(message.constData()+9);
     if(id_pl!=id){
-    Bombs bomb;
-    bomb.time=time;
-    bomb.id_create=5u;
-    bomb.x=x-25;
-    bomb.y=y-25;
-    bomb.status_bax=0;
-    bomb.it_pix_bax=scene->addPixmap(boom[0]);
-    bomb.it_pix_bax->setZValue(5);
-    bomb.it_bax=bomb.it_pix_bax;
-    bomb.active_boom=1;
-    bomb.it_bax->setPos(bomb.x,bomb.y);
-    bombs.append(bomb);
-    if(!timer_bax.isActive())timer_bax.start(120);
+        Bombs bomb;
+        bomb.time=time;
+        bomb.id_create=5u;
+        bomb.x=x-25;
+        bomb.y=y-25;
+        bomb.status_bax=0;
+        bomb.it_pix_bax=scene->addPixmap(boom[0]);
+        bomb.it_pix_bax->setZValue(5);
+        //    bomb.it_bax=bomb.it_pix_bax;
+        bomb.active_boom=1;
+        bomb.it_pix_bax->setPos(bomb.x,bomb.y);
+        bomb.effect.setSource(effect[3].source());
+        bomb.effect.setVolume(100);
+        bombs.append(bomb);
+
+        if(!timer_bax.isActive())timer_bax.start(120);
     }
 }
 
 void MainWindow::process_f10(const QByteArray &message)
 {
-//    qDebug()<<"IA TYTA++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
+    //    qDebug()<<"IA TYTA++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
     const quint8 strLength =*reinterpret_cast<const quint8*>((message.constData()+2));
     const QString text_player (QString::fromUtf8(message.constData()+3, strLength));
     text_info->setText(text_player);
     if(text_info->text() == "Вас отключили от сервера!!!"){
-//        qDebug()<<"выйти";
+        //        qDebug()<<"выйти";
         //ui->exit->click();
     }else {
         text_info->setVisible(true);
-        sch_process_10 = 10001;
-        if(timer_proc_10.isActive())
-        {
-            //timer_proc_10.stop();
-        }
-        timer_proc_10.start(10);
         if(!coord_of_sight.isNull()){
             text_info->setX(coord_of_sight.x()-150);
             text_info->setY(coord_of_sight.y()+40);
         }
-        qDebug()<<"Timer started";
+//        qDebug()<<"Timer started";
     }
 }
 void MainWindow::for_10(QPoint coord)
 {
-//    qDebug()<<"coord of sight == "<<coord;
-    coord_of_sight = coord;
-    if(sch_process_10 <= 10000){
+    //    qDebug()<<"coord of sight == "<<coord;
+        coord_of_sight = coord;/*
+    if(sch_process_10 <= (f10_time_show*1000)){*/
         //text_info->setPos(ui->centralWidget->cursor().pos().x(), ui->centralWidget->cursor().pos().y()-10);
         text_info->setX(coord_of_sight.x()-150);
         text_info->setY(coord_of_sight.y()+40);
-    }
+//    }
 }
 
-void MainWindow::for_10_timer()
-{
-//    qDebug()<<"In Time; sch == "<<sch_process_10;
-    sch_process_10--;
-    if(sch_process_10 <=0)
-    {
-        timer_proc_10.stop();
-        sch_process_10 = 10001;
-        text_info->setVisible(false);
-//        qDebug()<<"Timer stopped";
-    }
-}
+
 void MainWindow::process_f12(const QByteArray &message)
 {
     if(message.size() < 2) return;
@@ -421,14 +430,28 @@ void MainWindow::process_f12(const QByteArray &message)
         k+=2;
         int y = *reinterpret_cast<const qint16*>(message.constData()+k);
         k+=2;
-        if(decal_item>=128){
-            decal_item-=128;
-        }
-        if(decal_item>=32){
-            //booom
-            decal_item-=32;
-            if(decal_item!=id){
-                babax(x,y);
+        if((decal_item & 0x1F) != id){
+            if (decal_item & 0x80){
+                if(decal_item & 0x20){
+                    babax(x,y);
+                }else{
+//                    QPixmap hole_miss_pix(":/blood.png");
+//                    hole_miss_pix = hole_miss_pix.scaled(be_w/2,be_h/2,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
+//                    QGraphicsPixmapItem* hole = scene->addPixmap(hole_miss_pix);
+//                    hole->setPos(x-(hole_miss_pix.width()/2),y-(hole_miss_pix.height()/2));
+//                    hole->setZValue(1);
+//                    hole->show();
+                    // Пуля попадание
+                }
+            }
+            else {
+//                QPixmap hole_miss_pix(":/bullet_hole.png");
+//                hole_miss_pix = hole_miss_pix.scaled(be_w/3,be_h/3,Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
+//                QGraphicsPixmapItem* hole = scene->addPixmap(hole_miss_pix);
+//                hole->setPos(x-(hole_miss_pix.width()/2),y-(hole_miss_pix.height()/2));
+//                hole->setZValue(1);
+//                hole->show();
+                // Пуля промах
             }
         }
 
@@ -439,10 +462,10 @@ void MainWindow::babax(int x, int y)
 {
     QGraphicsPixmapItem* it_pix = scene->addPixmap(max_boom[0]);
     it_pix->setZValue(5);
-    QGraphicsItem* it_boom = it_pix;
-    it_boom->setPos(x-75,y-75);
-    it_pix->hide();
-    it_bax.append(it_boom);
+    //    QGraphicsItem* it_boom = it_pix;
+    it_pix->setPos(x-75,y-75);
+    it_pix->hide();//////////////////////////////////////////////////////////////////////////////////////////
+    //    it_bax.append(it_boom);
     it_pix_bax.append(it_pix);
     sost_bax.append(1);
     connect(&bax_time,SIGNAL(timeout()),this,SLOT(active()),Qt::UniqueConnection);
@@ -458,35 +481,40 @@ void MainWindow::process_f0c(const QByteArray &message)
     for(int i=0; i<Gamer.size();i++){
         if(id_mes==Gamer[i].id_sesia){
             QString name_pl=Gamer[i].name;
-//            ui->textBrowser->append(name_pl+": "+text_player);
+            //            ui->textBrowser->append(name_pl+": "+text_player);
             chat->appendMessage(name_pl+": "+text_player);
         }
     }
 }
 
 void MainWindow::go_bee()
-{
-
-    if(idx>10){idx=0;}
+{    
+    if(idx>bufer_size-1){idx=0;}
+    if(bufer_bee[idx].kol==-1){
+        f=false;
+        if(!timer_close.isActive())timer_close.start(15000);
+        return;
+    }
     int size=bufer_bee[idx].kol;
     regular_time=bufer_bee[idx].time;
     cl_time=regular_time;
-    //    qDebug()<<"idx = "<<idx;
-    const int beesToAppend = size - item_bees.size();
+//    qDebug()<<"idx = "<<idx;
+    const int beesToAppend = size - item_pix.size();
     for(int j=0;j<beesToAppend;++j){
         it_pix=scene->addPixmap(*picture[9]);
         it_pix->setZValue(2);
         item_pix.append(it_pix);
-        item_bees.append(it_pix);
         status_bee.append(0);
         dir_bee.append(0);
+        old_dir_x.append(0);
+        old_dir_y.append(0);
         flag_bee.append(1);
         bee_show++;
     }
     if(bee_show>size){
         if(hidden_bee.size()>=bee_show-size){
             for(int i=0;i<bee_show-size;i++){
-                item_bees[hidden_bee[0]]->hide();
+                item_pix[hidden_bee[0]]->hide();
                 show_bee.append(hidden_bee[0]);
                 flag_bee[hidden_bee[0]]=0;
                 hidden_bee.removeFirst();
@@ -501,7 +529,7 @@ void MainWindow::go_bee()
         if(show_bee.size()>=size-bee_show){
             for(int i=0;i<size-bee_show;i++){
                 flag_bee[show_bee[0]]=1;
-                item_bees[show_bee[0]]->show();
+                item_pix[show_bee[0]]->show();
                 show_bee.removeFirst();
             }
             bee_show+=size-bee_show;}else {
@@ -510,63 +538,38 @@ void MainWindow::go_bee()
     }
     int beeIdx = 0;
     int bee_cadr = 0;
-    for(;(beeIdx<item_bees.size())&&(bee_cadr<size);++beeIdx){
+    for(;(beeIdx<item_pix.size())&&(bee_cadr<size);++beeIdx){
         if(flag_bee[beeIdx]){
-            //      qDebug()<<"kadrs ---- "<<bee_cadr;
-            if(idx == 10){
-                if(bufer_bee[0].kol<bufer_bee[idx].kol){
-                    dir_bee[beeIdx]=0;
-                }else{
-                    dir_bee[beeIdx]=bufer_bee[idx].bee[bee_cadr].x-bufer_bee[0].bee[bee_cadr].x;
-                }
-            }else{
-                if(bufer_bee[idx+1].kol<bufer_bee[idx].kol){
-                    dir_bee[beeIdx]=0;
-                }else{
-                    dir_bee[beeIdx]=bufer_bee[idx].bee[bee_cadr].x-bufer_bee[idx+1].bee[bee_cadr].x;
-                }
-            }
-            //            if(((dir_bee[beeIdx]!=0)||(show_bee.size()>0))&&(flag_bee[beeIdx]==3)){
-            //                //   qDebug()<<"ERROR ---- PICTURE ";
-            //                if(hidden_bee.indexOf(beeIdx)!=-1){
-            //                    //     qDebug()<<"REM ---- ERR"<<beeIdx;
-            //                    // qDebug()<<"STAY_BEE ---- "<<show_bee.size();
-            //                    hidden_bee.removeAt(hidden_bee.indexOf(beeIdx));
-            //                }
-            //                flag_bee[beeIdx]=1;
-            //            }
-
             int sost=bufer_bee[idx].bee[bee_cadr].s;
             int x=bufer_bee[idx].bee[bee_cadr].x;
             int y=bufer_bee[idx].bee[bee_cadr].y;
             //    qDebug()<< "sost ---- "<<sost<<"     bee_idx ---"<<beeIdx;
+//            if(flag_bee[beeIdx]<3){
+//                qDebug()<<"old_x === "<<bufer_bee[idx].bee[bee_cadr].x<<"          this x === "<<old_dir_x[beeIdx];
+            dir_bee[beeIdx]=old_dir_x[beeIdx]-bufer_bee[idx].bee[bee_cadr].x;
+            old_dir_x[beeIdx]=bufer_bee[idx].bee[bee_cadr].x;
 
+
+//            }
             if(sost<=63){
-                dir_bee[beeIdx]=-20;
+//                dir_bee[beeIdx]=-20;
                 qDebug()<<"ERROR";
             }
             if(sost>=192){
                 if(flag_bee[beeIdx]==1){
-                    if(fall==0){
-                        flag_bee[beeIdx]=3;
-                    }else{
-                        flag_bee[beeIdx]=4;
-                    }
+                    flag_bee[beeIdx]=3;
+
                     item_pix[beeIdx]->setPixmap(*picture[9]);
                     item_pix[beeIdx]->setZValue(1);
                     hidden_bee.append(beeIdx);
-                    //                    bee_hide++;
-
                 }
                 sost-=192;
             }
             if(sost>=128){
-                if(flag_bee[beeIdx]==1){
-                    if(fall==0){
-                        flag_bee[beeIdx]=3;
-                    }else{
-                        flag_bee[beeIdx]=4;
-                    }
+                if(flag_bee[beeIdx]==1){                    
+
+                    flag_bee[beeIdx]=3;
+
                     item_pix[beeIdx]->setPixmap(*picture[9]);
                     item_pix[beeIdx]->setZValue(1);
                     hidden_bee.append(beeIdx);
@@ -576,50 +579,38 @@ void MainWindow::go_bee()
             }
             if(sost>=64){
                 if((flag_bee[beeIdx]==3)||(flag_bee[beeIdx]==4)){
-                    item_bees[beeIdx]->hide();
+                    item_pix[beeIdx]->hide();
                     flag_bee[beeIdx]=1;
                     hidden_bee.removeAt(hidden_bee.indexOf(beeIdx));
                     hidden_bee.removeAt(hidden_bee.indexOf(beeIdx));
                 }
             }
-            if(flag_bee[beeIdx]!=4)item_bees[beeIdx]->setPos(x,y);
-            if(flag_bee[beeIdx]==4){
-                if(idx ==10){
-                    if(bufer_bee[0].kol<bufer_bee[idx].kol){
-                        flag_bee[beeIdx]=3;
-                    }else{
-                        if(bufer_bee[idx].bee[bee_cadr].y != bufer_bee[0].bee[bee_cadr].y){
-                            flag_bee[beeIdx]=4;
-                        }else{
-                            flag_bee[beeIdx]=3;
-                        }
-                    }
+
+            if(((flag_bee[beeIdx]==4)||(flag_bee[beeIdx]==3))&&(fall!=0)){
+                if(bufer_bee[idx].bee[bee_cadr].y!=old_dir_y[beeIdx]){
+                    if(bufer_bee[idx].bee[bee_cadr].y>item_pix[beeIdx]->y())flag_bee[beeIdx]=3;
                 }else{
-                    if(bufer_bee[idx+1].kol<bufer_bee[idx].kol){
-                        flag_bee[beeIdx]=3;
-                    }else{
-                        if(bufer_bee[idx].bee[bee_cadr].y != bufer_bee[idx+1].bee[bee_cadr].y){
-                            flag_bee[beeIdx]=4;
-                        }else{
-                            flag_bee[beeIdx]=3;
-                        }
-                    }
+                    flag_bee[beeIdx]=4;
                 }
             }
-
+            old_dir_y[beeIdx]=bufer_bee[idx].bee[bee_cadr].y;
+            if(flag_bee[beeIdx]!=4){
+                item_pix[beeIdx]->setPos(x,y);
+            }
             bee_cadr++;
         }
+//        qDebug()<<endl;
     }
+    bufer_bee[idx].kol=-1;
     idx++;
 
 }
 
 void MainWindow::go_pix()
 {
-
-//    text_info.show();
-//    text_info.move(ui->graphicsView->cursor().pos().x(),ui->centralWidget->cursor().pos().y());
-//    qDebug()<<text_info.pos()<<"    -----     info"<<ui->centralWidget->cursor().pos()<<"  -----  ----- cursor"<<endl;
+    //    text_info.show();
+    //    text_info.move(ui->graphicsView->cursor().pos().x(),ui->centralWidget->cursor().pos().y());
+    //    qDebug()<<text_info.pos()<<"    -----     info"<<ui->centralWidget->cursor().pos()<<"  -----  ----- cursor"<<endl;
 
     if(read_bee_left==nullptr){
         read_bee_left = new QImageReader(QString("://пчёлка.gif"));
@@ -633,31 +624,30 @@ void MainWindow::go_pix()
     }
     for(int i=0;i<item_pix.size();i++){
         if(flag_bee[i]==0){
-            item_bees[i]->hide();
+            item_pix[i]->hide();
             item_pix[i]->setPixmap(bee_left[0]);
             item_pix[i]->setZValue(2);
         }
         if(flag_bee[i]==3){
             item_pix[i]->setPixmap(*picture[9]);
             item_pix[i]->setZValue(1);
-            item_bees[i]->show();
+            item_pix[i]->show();
         }
         if(flag_bee[i]==4){
-            const int heightDiff = hei-be_h - item_bees[i]->pos().toPoint().y();
-                    const int downStep = (heightDiff > fall)? fall : heightDiff;
-                    if(item_bees[i]->pos().toPoint().y()<hei-be_h){
-                        item_bees[i]->setY(item_bees[i]->pos().toPoint().y()+downStep);
-                    }else{
-                        flag_bee[i]=3;
-                    }
+            const int heightDiff = (fall > 0)? (hei-be_h - item_pix[i]->pos().toPoint().y()):(hei - item_pix[i]->pos().toPoint().y());
+            const int downStep = (heightDiff > fall)? fall : heightDiff;
+            if((item_pix[i]->pos().toPoint().y()<=hei-be_h)&&(item_pix[i]->pos().toPoint().y()>=0)){
+                item_pix[i]->setY(item_pix[i]->pos().toPoint().y()+downStep);
+            }
         }
         if(flag_bee[i]==1){
             if(dir_bee[i]>=0){
                 if(status_bee[i]<read_bee_left->imageCount()){
                     item_pix[i]->setPixmap(bee_left[status_bee[i]]);
                     item_pix[i]->setZValue(2);
-                    item_bees[i]->show();
+                    item_pix[i]->show();
                     status_bee[i]++;
+//                    if(i<=10)qDebug()<<"лево  --- "<<i;
                 }
                 else{
                     status_bee[i]=0;
@@ -666,16 +656,18 @@ void MainWindow::go_pix()
                 if(status_bee[i]<read_bee_right->imageCount()){
                     item_pix[i]->setPixmap(bee_right[status_bee[i]]);
                     item_pix[i]->setZValue(2);
-                    item_bees[i]->show();
+                    item_pix[i]->show();
                     status_bee[i]++;
+//                    if(i<=10)qDebug()<<"право  --- "<<i;
                 }
                 else{
                     status_bee[i]=0;
                 }
             }
         }
+//        if(i==10)qDebug()<<"idx ----- "<<idx<<endl;
     }
-//    List->setStyleSheet("background-color: rgba(255,255,255,220)");
+    //    List->setStyleSheet("background-color: rgba(255,255,255,220)");
     List->move(ui->graphicsView->geometry().center().x()-128,ui->graphicsView->geometry().center().y()-96);
 
 }
@@ -683,8 +675,13 @@ void MainWindow::do_pix()
 {
     read = new QImageReader(QString(file[11]));
     read_bomb = new QImageReader(QString("://бомба.gif"));
+    read_reload = new QImageReader(QString("://reload.gif"));
+    for(int i=0;i<read_reload->imageCount();++i){
+        reload.push_back(QPixmap::fromImageReader(read_reload).scaled(64,64));
+    }
     for(int i=0;i<read_bomb->imageCount();++i){
         boom.push_back(QPixmap::fromImageReader(read_bomb).scaled(70,40));
+        Q_ASSERT(!boom.last().isNull());
     }
     for(int i=0;i<read->imageCount();++i){
         min_boom.push_back(QPixmap::fromImageReader(read).scaled(100,100));
@@ -692,8 +689,7 @@ void MainWindow::do_pix()
     }
     it_pix_boom=scene->addPixmap(min_boom[0]);
     it_pix_boom->setZValue(4);
-    it_boom=it_pix_boom;
-    it_boom->setPos(50,50);
+    it_pix_boom->setPos(50,50);
     it_pix_boom->hide();
 }
 void MainWindow::set_pix()
@@ -731,23 +727,25 @@ void MainWindow::set_bax()
     }
     for(int i=0;i<bombs.size();i++){
         if((bombs[i].status_bax<boom.size())&&(bombs[i].active_boom)){
-            bombs[i].it_pix_bax->show();
             bombs[i].it_pix_bax->setPixmap(boom[bombs[i].status_bax]);
-            bombs[i].status_bax++;
+            bombs[i].it_pix_bax->setZValue(4);
+            bombs[i].it_pix_bax->show();
+            ++bombs[i].status_bax;
         }
         else{
             if(bombs[i].active_boom){
                 bombs[i].status_bax=0;
                 bombs[i].it_pix_bax->setPixmap(max_boom[bombs[i].status_bax]);
                 bombs[i].status_bax++;
-                bombs[i].it_bax->setPos(bombs[i].x-50,bombs[i].y-50);
+                bombs[i].it_pix_bax->setPos(bombs[i].x-50,bombs[i].y-50);
                 bombs[i].active_boom=0;
+                bombs[i].effect.play();
             }else {
                 if(bombs[i].status_bax<read->imageCount()){
                     bombs[i].it_pix_bax->setPixmap(max_boom[bombs[i].status_bax]);
                     bombs[i].status_bax++;
                 }else {
-                    scene->removeItem(bombs[i].it_bax);
+                    scene->removeItem(bombs[i].it_pix_bax);
                     bombs.removeAt(i);
                 }
             }
@@ -756,43 +754,40 @@ void MainWindow::set_bax()
 }
 void MainWindow::set_pos(QPoint p, bool sost)
 {
-    if(kol_pat == 0){
-//        return;
-    }
-    if(sost){
-        if(score>=cost_boom){
-        Bombs bomb;
-        bomb.time=regular_time;
-        bomb.id_create=5u;
-        bomb.x=p.x()-25;
-        bomb.y=p.y()-25;
-        bomb.status_bax=0;
-        bomb.it_pix_bax=scene->addPixmap(boom[0]);
-        bomb.it_pix_bax->setZValue(4);
-        bomb.it_bax=bomb.it_pix_bax;
-        bomb.active_boom=1;
-        bomb.it_bax->setPos(bomb.x,bomb.y);
-
-        bombs.append(bomb);
-        if(!timer_bax.isActive())timer_bax.start(120);
-        QByteArray message_f09;
-        message_f09.resize(8);
-        quint8 *ptr = reinterpret_cast<quint8*> (message_f09.data());
-        *ptr = id; ++ptr;
-        *ptr = 0x09; ++ptr;
-        *ptr = bomb.time; ++ptr;
-        *ptr = sost; ++ptr;
-        *reinterpret_cast<quint16*> (ptr) = bomb.x; ptr += sizeof(quint16);
-        *reinterpret_cast<quint16*> (ptr) = bomb.y; ptr += sizeof(quint16);
-        client->udpSocket.writeDatagram(message_f09, address,port);
-        }
-
-    }
-    else
-    {
+    if(text_info) text_info->setVisible(false);
+    if((f)&&(p.x()>=0)&&(p.y()>=0)&&(p.x()<=wid)&&(p.y()<=hei)){
+        if(sost){
+            if(score>=cost_boom){
 
 
-        if(f){///Добавить патроны?!
+                Bombs bomb;
+                bomb.time=regular_time;
+                bomb.id_create=5u;
+                bomb.x=p.x()-25;
+                bomb.y=p.y()-25;
+                bomb.status_bax=0;
+                bomb.it_pix_bax=scene->addPixmap(boom[0]);
+                bomb.it_pix_bax->setZValue(4);
+                bomb.active_boom=1;
+                bomb.it_pix_bax->setPos(bomb.x,bomb.y);
+                bomb.effect.setSource(effect[3].source());
+                bomb.effect.setVolume(100);
+                bombs.append(bomb);
+
+                if(!timer_bax.isActive())timer_bax.start(120);
+                QByteArray message_f09;
+                message_f09.resize(8);
+                quint8 *ptr = reinterpret_cast<quint8*> (message_f09.data());
+                *ptr = id; ++ptr;
+                *ptr = 0x09; ++ptr;
+                *ptr = bomb.time; ++ptr;
+                *ptr = sost; ++ptr;
+                *reinterpret_cast<quint16*> (ptr) = bomb.x; ptr += sizeof(quint16);
+                *reinterpret_cast<quint16*> (ptr) = bomb.y; ptr += sizeof(quint16);
+                client->udpSocket.writeDatagram(message_f09, address,port);
+            }
+
+        }else{
             this->x=p.x();
             this->y=p.y();
             quint8 time_cl=regular_time;
@@ -801,9 +796,7 @@ void MainWindow::set_pos(QPoint p, bool sost)
             BuferBee fire_bee=bufer_bee[idx_buf];
             bool control = false;
             int kill_bee[3] {0};
-            //        qDebug()<<"kol --- "<<fire_bee.kol<<endl;
             for(int i=0;i<fire_bee.kol;i++){
-                //            qDebug()<<"x -- "<<fire_bee.bee[i].x<<" y -- "<<fire_bee.bee[i].y<<" s -- "<<fire_bee.bee[i].s;
                 if((fire_bee.bee[i].x<=x)&&(fire_bee.bee[i].y<=y)&&(fire_bee.bee[i].x+be_w>x)&&(fire_bee.bee[i].y+be_h>y)){
                     control = true;
                     if(fire_bee.bee[i].s>=192){++kill_bee[2];fire_bee.bee[i].s-=192;}
@@ -836,18 +829,18 @@ void MainWindow::set_pos(QPoint p, bool sost)
 
             if(kill_bee[0]>=3){
                 timer_pr.stop();
-                effect[3].setVolume(100);
-                effect[3].play();
                 size_boom=1;
                 status_boom=0;
-                it_boom->setPos(x-75,y-75);
+                it_pix_boom->setPos(x-75,y-75);
                 timer_pr.start(60);
+                effect[3].setVolume(100);
+                effect[3].play();
             }
             if(kill_bee[0]==2){
                 timer_pr.stop();
                 size_boom=0;
                 status_boom=0;
-                it_boom->setPos(x-50,y-50);
+                it_pix_boom->setPos(x-50,y-50);
                 timer_pr.start(60);
                 effect[2].setVolume(100);
                 effect[2].play();
@@ -860,7 +853,15 @@ void MainWindow::set_pos(QPoint p, bool sost)
             if(kill_bee[0] == 0){
                 effect[0].setVolume(100);
                 effect[0].play();}
+            kol_pat--;
         }
+    }
+    if(kol_pat == 0){
+        f=false;
+        if(!timer_1.isActive()) timer_1.start(50);
+        pic_reload=time_rep*2/7;
+        check_reload=0;
+        reload_status=0;
     }
 }
 
@@ -953,6 +954,14 @@ void MainWindow::close_players(QTreeWidgetItem *item, int n)
 
     emit close_num(i);
 
+}
+
+void MainWindow::close_me()
+{
+    qDebug()<<"dshjfdshjfhdskjfghjdsgf------------------------------------------------------------------------kjhdsgjhfgdjhskg";
+    timer_close.stop();
+    close_do();
+    ui->message_text->setText(QString("Вас отключили от сервера!!!"));
 }
 
 void MainWindow::creating_client()
@@ -1178,7 +1187,7 @@ void MainWindow::setSignal(int p)
         process_f6(client->sendMsg);
         break;
     case 8:
-        process_f8(client->sendMsg);//don't have bagi
+        process_f8(client->sendMsg);//it's working!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YRA Spend time --  6 mounth 1 week 3 days 20 hour 11 minutes
         break;
     case 10:
         process_f0a(client->sendMsg);
@@ -1243,9 +1252,6 @@ void MainWindow::add_client()
     create_server = false;
     create_client = true;
     fun_helper();
-    //    client = new BugClient(/*QHostAddress::LocalHost,49152*/QHostAddress(ui->ip->text()),ui->spinBox_4->value());
-    //    connect(client,SIGNAL(mySignal(int)),this,SLOT(setSignal(int)));
-    //    connect(client.data()->webSocket,SIGNAL(textMessageReceived(QString)),this->chat,SLOT(appendMessage(QString)));
 }
 
 void MainWindow::hide_win()
@@ -1254,11 +1260,6 @@ void MainWindow::hide_win()
     create_server = true;
     create_client = true;
     fun_helper();
-    //    qDebug()<<"server creator";
-    //    server = new BugServer(ui->spinBox_4->value()/*,ui->spinBox->value(),ui->spinBox_2->value(),ui->spinBox_3->value()*/);
-    //    //client = new BugClient(ui->spinBox_4->value(),ui->ip->text());
-    //connect(client,SIGNAL(mySignal(int)),this,SLOT(setSignal(int)));
-
 }
 
 void MainWindow::muz_volue(){
@@ -1341,10 +1342,10 @@ void MainWindow::send_message()
 }
 
 void MainWindow::active(){
-    if(it_bax.size()==0){
+    if(it_pix_bax.size()==0){
         bax_time.stop();
     }
-    for(int i=0;i<it_bax.size();i++){
+    for(int i=0;i<it_pix_bax.size();i++){
         if(sost_bax[i]<max_boom.size()){
             if(!it_pix_bax[i]->isVisible()){
                 it_pix_bax[i]->show();}
@@ -1355,25 +1356,30 @@ void MainWindow::active(){
             it_pix_bax[i]->hide();
             sost_bax.removeAt(i);
             it_pix_bax.removeAt(i);
-            it_bax.removeAt(i);
         }
     }
 }
 
 void MainWindow::add_patron(){
-
-    if(n<7){
-        patron[n]->show();
-        n++;
-        if(!effect[4].isPlaying()) effect[4].play();
+    ++check_reload;
+    if(reload_status<reload.size()){
+        ui->graphicsView->setCursor(QPixmap(reload[reload_status]));
+        reload_status++;
     }else{
-
-        effect[4].stop();
-        timer_1.stop();
-        f=true;
-        //        ui->graphicsView->setCursor(Qt::CrossCursor);
-        //        ui->graphicsView->setCursor(QPixmap(QString("://курсор_1.png")));
-        ui->graphicsView->setCursor(QPixmap(QString("://прицел_1.png")));
+        reload_status=0;
+    }
+    if(pic_reload == check_reload){
+        if(n<7){
+            patron[n]->show();
+            n++;
+            if(!effect[4].isPlaying()) effect[4].play();
+        }else{
+            effect[4].stop();
+            timer_1.stop();
+            f=true;
+            ui->graphicsView->setCursor(QPixmap(QString("://sight_1.png")));
+        }
+        check_reload=0;
     }
 }
 
@@ -1409,14 +1415,16 @@ void MainWindow::goto_xy(){
 
 void MainWindow::close_do()
 {
+    fall_count=0;
+    timer_close.stop();
+    text_info = nullptr;
     bax_time.stop();
-    it_bax.clear();
     it_pix_bax.clear();
     sost_bax.clear();
 
     timer_bax.stop();
     bombs.clear();
-    bufer_bee.clear();
+//    bufer_bee.clear();
     idx=0;
     score=0;
 
@@ -1440,12 +1448,15 @@ void MainWindow::close_do()
     time_bee.stop();
     time_go_bee.stop();
     dir_bee.clear();
+    old_dir_y.clear();
+    old_dir_x.clear();
 
     hidden_bee.clear();
     show_bee.clear();
     flag_bee.clear();
 
     List->clear();
+    delete text_info;
 
 
     create_server = false;
@@ -1474,7 +1485,6 @@ void MainWindow::close_do()
     boom.clear();
     min_boom.clear();
     max_boom.clear();
-    item_bees.clear();
     item_pix.clear();
     scene->clear();
     for(int i=0;i<7;i++){
@@ -1496,7 +1506,7 @@ void MainWindow::close_do()
     ui->widget_2->hide();
     //    ui->graphicsView->setCursor(Qt::CrossCursor);
     //    ui->graphicsView->setCursor(QPixmap(QString("://курсор_1.png")));
-    ui->graphicsView->setCursor(QPixmap(QString("://прицел_1.png")));
+    ui->graphicsView->setCursor(QPixmap(QString("://sight_1.png")));
     QIcon icon(":/клякса1.png");
     this->setWindowIcon(icon);
     ui->toolButton_2->setChecked(false);
@@ -1545,11 +1555,11 @@ void MainWindow::show_win()
         player.setMedia(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/g.mp3"));
         player.setVolume(50);//40
 
-        effect[0].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/shot_miss0.wav"));
-        effect[1].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/shot_down.wav"));
-        effect[2].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/great_shot.wav"));
-        effect[3].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/mega_shot.wav"));
-        effect[4].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/reload.wav"));
+        effect[0].setSource(QUrl::fromLocalFile(soundPath+"shot_miss0.wav"));
+        effect[1].setSource(QUrl::fromLocalFile(soundPath+"shot_down.wav"));
+        effect[2].setSource(QUrl::fromLocalFile(soundPath+"great_shot.wav"));
+        effect[3].setSource(QUrl::fromLocalFile(soundPath+"mega_shot.wav"));
+        effect[4].setSource(QUrl::fromLocalFile(soundPath+"reload.wav"));
         for(int i=0;i<5;i++) effect[i].setVolume(100);
 
 
@@ -1575,11 +1585,11 @@ void MainWindow::show_win()
         player.setMedia(QUrl::fromLocalFile("://r.mp3"));
         player.setVolume(50);//40
 
-        effect[0].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/промах.wav"));
-        effect[1].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/5.wav"));
-        effect[2].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/10.wav"));
-        effect[3].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/20.wav"));
-        effect[4].setSource(QUrl::fromLocalFile(QApplication::applicationDirPath()+"/reload.wav"));
+        effect[0].setSource(QUrl::fromLocalFile(soundPath+"промах.wav"));
+        effect[1].setSource(QUrl::fromLocalFile(soundPath+"5.wav"));
+        effect[2].setSource(QUrl::fromLocalFile(soundPath+"10.wav"));
+        effect[3].setSource(QUrl::fromLocalFile(soundPath+"20.wav"));
+        effect[4].setSource(QUrl::fromLocalFile(soundPath+"reload.wav"));
         for(int i=0;i<5;i++) effect[i].setVolume(100);
 
         for(int i=0;i<6;i++){

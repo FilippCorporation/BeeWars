@@ -75,7 +75,7 @@ private:
     int wid=640;
     int size_b=64;
     int kol = 25;
-
+    const int bee_speed = 3;
 
 
     QList<Bombs> bomb;

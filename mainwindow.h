@@ -87,9 +87,11 @@ public:
 
 private:
     bool feature = true;
+    const static int bufer_size = 61;
     //bool Check_IP();
     //QList<std::pair<QString,QImage>>smiles;
-    QList<BuferBee>bufer_bee;
+    BuferBee bufer_bee[bufer_size];
+
 
 //void keyPressEvent(QKeyEvent *event);
     Chat *chat;
@@ -99,23 +101,27 @@ private:
 
     QImageReader *read_bee_left=nullptr;
     QVector<QPixmap> bee_left;
-    QTimer time_bee;
+    QTimer time_bee,timer_close;
     QTimer time_go_bee;
     QList<int>dir_bee;
-
+    QList<int>old_dir_x;
+    QList<int>old_dir_y;
     QList<int>hidden_bee;
     QList<int>show_bee;
     QList<int>flag_bee;
-    ///////////
-    QTimer timer_proc_10;
-    //////////
+
 
     QImageReader *read;
+    QImageReader *read_reload;
     QImageReader *read_bomb;
     QVector<QPixmap> boom;
     QVector<QPixmap> min_boom;
     QVector<QPixmap> max_boom;
+    QVector<QPixmap> reload;
     QTreeWidget *List;
+    int pic_reload=0;
+    int check_reload=0;
+    int reload_status=0;
 
 
     bool create_server = false;
@@ -127,16 +133,23 @@ private:
     QPointer<BugClient> client;
     int size_boom=0;
     int status_boom=0;
+    short fall_count=0;
 
     int status_bax=0;
     int kol_be, hei, wid, be_h, be_w, fall, kol_pat, time_rep, cost_boom, r_boom, s_y, s_p, s_m ;
     quint8 id;
     QHostAddress address;
     quint16 port;
+    const QString soundPath = QApplication::applicationDirPath()+QDir::separator()+QStringLiteral("Sounds")+QDir::separator();
 
 
     int idx=0;
     int score=0;
+
+    //////////////////////////////////////////////нужна норм перезарядка на сервере!!!
+    int f10_time_show = 10; //время показа предупреждения, заменить в 10f (сек)
+
+    /////////////////////////////////////////////
 
     int bee_hide=0;
     int bee_show=0;
@@ -153,18 +166,15 @@ private:
 
     QGraphicsPixmapItem* it_pix;
 
-    QList<QGraphicsItem*>item_bees;
     QList<QGraphicsPixmapItem*>item_pix;
     QList<int>status_bee;
     quint8 regular_time;
 
     QList<Players>Gamer;
 
-    QGraphicsItem* it_boom;
     QGraphicsPixmapItem* it_pix_boom;
 
 
-    QList<QGraphicsItem*> it_bax;
     QList<QGraphicsPixmapItem*> it_pix_bax;
     QList<int> sost_bax;
     QList<Bombs>bombs;
@@ -183,8 +193,7 @@ private:
     QGraphicsSimpleTextItem *text_info;// = new QGraphicsSimpleTextItem();///Сделать добавление текста в сцену
 
     QPoint coord_of_sight;
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    int sch_process_10 = 501;
+
     int bx=0,by=0;
     QTimer timer_bax;
     QPixmap *picture[12];
@@ -200,9 +209,8 @@ private:
 
 private slots:
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    void for_10(QPoint);
-    void for_10_timer();
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void for_10(QPoint point);
+       //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     void go_bee();
     void go_pix();
     void _close();
@@ -230,6 +238,7 @@ private slots:
     void Tree(QList<Players> Player);
     void Problem();
     void close_players(QTreeWidgetItem* item,int n);
+    void close_me();
 
 signals:
     void close_num(int i);

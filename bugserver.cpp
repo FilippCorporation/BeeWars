@@ -197,8 +197,8 @@ void BugServer::fillMessage06()
         *ptr=static_cast<const quint8>(Player[i].id_sesia);++ptr;
         *reinterpret_cast<qint32*> (ptr) = Player[i].s;ptr+=3;
         if(Player[i].kol_pat<=0)Player[i].kol_pat=10;
-//        *ptr=static_cast<const quint8>(Player[i].kol_pat);++ptr;
-        qDebug()<<"player  "<<i<<"     patron = "<<Player[i].kol_pat;
+        *ptr=static_cast<const quint8>(Player[i].kol_pat);++ptr;
+//        qDebug()<<"player  "<<i<<"     patron = "<<Player[i].kol_pat;
     }
 //    qDebug()<<"06 ---  "<<message_f06<<"    kol|pl -- "<<Player.size();
     for(int i=0;i<Player.size();i++){
@@ -357,18 +357,19 @@ void BugServer::do_bee()
         for(int j=0;j<kol;j++){
             switch (plane[i].bee[j].get_sost()) {
             case 0:
-                plane[i].bee[j].x=std::rand()%(wid-size_b);
-                plane[i].bee[j].y=std::rand()%(hei-size_b);
+//                plane[i].bee[j].x=std::rand()%(wid-size_b);
+//                plane[i].bee[j].y=std::rand()%(hei-size_b);
                 plane[i].bee[j].sost=std::rand()%9;
 
                 break;
             case 1:
                 if(plane[i].bee[j].y>0){
                     plane[i].bee[j].y--;
+                    if(std::rand()%2)plane[i].bee[j].sost=std::rand()%9;
 
                 }else{
-                    plane[i].bee[j].x=std::rand()%(wid-size_b);
-                    plane[i].bee[j].y=std::rand()%(hei-size_b);
+//                    plane[i].bee[j].x=std::rand()%(wid-size_b);
+//                    plane[i].bee[j].y=std::rand()%(hei-size_b);
                     plane[i].bee[j].sost=std::rand()%9;
 
                 }
@@ -376,21 +377,23 @@ void BugServer::do_bee()
             case 2:
                 if(plane[i].bee[j].y<hei-size_b){
                     plane[i].bee[j].y++;
+                     if(std::rand()%2)plane[i].bee[j].sost=std::rand()%9;
 
                 }else{
-                    plane[i].bee[j].x=std::rand()%(wid-size_b);
-                    plane[i].bee[j].y=std::rand()%(hei-size_b);
-                    plane[i].bee[j].sost=std::rand()%9;
+//                    plane[i].bee[j].x=std::rand()%(wid-size_b);
+//                    plane[i].bee[j].y=std::rand()%(hei-size_b);
+                     plane[i].bee[j].sost=std::rand()%9;
 
                 }
                 break;
             case 3:
                 if(plane[i].bee[j].x > 0){
                     plane[i].bee[j].x--;
+                     if(std::rand()%2)plane[i].bee[j].sost=std::rand()%9;
 
                 }else{
-                    plane[i].bee[j].x=std::rand()%(wid-size_b);
-                    plane[i].bee[j].y=std::rand()%(hei-size_b);
+//                    plane[i].bee[j].x=std::rand()%(wid-size_b);
+//                    plane[i].bee[j].y=std::rand()%(hei-size_b);
                     plane[i].bee[j].sost=std::rand()%9;
 
                 }
@@ -399,11 +402,12 @@ void BugServer::do_bee()
 
                 if(plane[i].bee[j].x<wid-size_b){
                     plane[i].bee[j].x++;
+                     if(std::rand()%2)plane[i].bee[j].sost=std::rand()%9;
 
                 }else{
-                    plane[i].bee[j].x=std::rand()%(wid-size_b);
-                    plane[i].bee[j].y=std::rand()%(hei-size_b);
-                    plane[i].bee[j].sost=std::rand()%9;
+//                    plane[i].bee[j].x=std::rand()%(wid-size_b);
+//                    plane[i].bee[j].y=std::rand()%(hei-size_b);
+                   plane[i].bee[j].sost=std::rand()%9;
 
                 }
                 break;
@@ -412,10 +416,11 @@ void BugServer::do_bee()
                 if((plane[i].bee[j].y>0)&&(plane[i].bee[j].x<wid-size_b)){
                     plane[i].bee[j].x+=std::rand()%6;
                     plane[i].bee[j].y-=std::rand()%6;
+                     if(std::rand()%2)plane[i].bee[j].sost=std::rand()%9;
 
                 }else{
-                    plane[i].bee[j].x=std::rand()%(wid-size_b);
-                    plane[i].bee[j].y=std::rand()%(hei-size_b);
+//                    plane[i].bee[j].x=std::rand()%(wid-size_b);
+//                    plane[i].bee[j].y=std::rand()%(hei-size_b);
                     plane[i].bee[j].sost=std::rand()%9;
 
                 }
@@ -426,11 +431,12 @@ void BugServer::do_bee()
                 if((plane[i].bee[j].y>0)&&(plane[i].bee[j].x>0)){
                     plane[i].bee[j].x--;
                     plane[i].bee[j].y--;
+                     if(std::rand()%2)plane[i].bee[j].sost=std::rand()%9;
 
                 }else{
 
-                    plane[i].bee[j].x=std::rand()%(wid-size_b);
-                    plane[i].bee[j].y=std::rand()%(hei-size_b);
+//                    plane[i].bee[j].x=std::rand()%(wid-size_b);
+//                    plane[i].bee[j].y=std::rand()%(hei-size_b);
                     plane[i].bee[j].sost=std::rand()%9;
                 }
                 break;
@@ -439,10 +445,11 @@ void BugServer::do_bee()
                 if((plane[i].bee[j].y<hei-size_b)&&(plane[i].bee[j].x<wid-size_b)){
                     plane[i].bee[j].x++;
                     plane[i].bee[j].y++;
+                     if(std::rand()%2)plane[i].bee[j].sost=std::rand()%9;
 
                 }else{
-                    plane[i].bee[j].x=std::rand()%(wid-size_b);
-                    plane[i].bee[j].y=std::rand()%(hei-size_b);
+//                    plane[i].bee[j].x=std::rand()%(wid-size_b);
+//                    plane[i].bee[j].y=std::rand()%(hei-size_b);
                     plane[i].bee[j].sost=std::rand()%9;
 
                 }
@@ -451,10 +458,11 @@ void BugServer::do_bee()
                 if((plane[i].bee[j].y<hei-size_b)&&(plane[i].bee[j].x>0)){
                     plane[i].bee[j].x--;
                     plane[i].bee[j].y++;
+                     if(std::rand()%2)plane[i].bee[j].sost=std::rand()%9;
 
                 }else{
-                    plane[i].bee[j].x=std::rand()%(wid-size_b);
-                    plane[i].bee[j].y=std::rand()%(hei-size_b);
+//                    plane[i].bee[j].x=std::rand()%(wid-size_b);
+//                    plane[i].bee[j].y=std::rand()%(hei-size_b);
                     plane[i].bee[j].sost=std::rand()%9;
 
                 }
@@ -756,121 +764,182 @@ void BugServer::doing_bufer()
             if(plane[plane_currIdx].bee[j].time_to_alive == plane[i].time){
                 plane[plane_currIdx].bee[j].fall=0;
                 plane[plane_currIdx].bee[j].setState(Make_bee::Alive);
+                plane[plane_currIdx].bee[j].x = std::rand()%(wid-size_b);
+                plane[plane_currIdx].bee[j].y = std::rand()%(hei-size_b);
+                plane[plane_currIdx].bee[j].sost = std::rand()%9;
             }
             break;
         default:
             break;
         }
         if(plane[plane_currIdx].bee[j].state()==Make_bee::Alive){
-
             switch (plane[plane_currIdx].bee[j].sost) {
             case 0:
                 plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
                 plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
                 plane[plane_currIdx].bee[j].sost=std::rand()%9;
-
                 break;
             case 1:
-                if(plane[plane_currIdx].bee[j].y>0){
-                    plane[plane_currIdx].bee[j].y--;
+                if(plane[plane_currIdx].bee[j].y>=bee_speed){
+                    plane[plane_currIdx].bee[j].y -= bee_speed;
 
                 }else{
-                    plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
+                    plane[plane_currIdx].bee[j].sost = 2;
+                    plane[plane_currIdx].bee[j].y += bee_speed;
+                    /*plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
                     plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
-                    plane[plane_currIdx].bee[j].sost=std::rand()%9;
+                    plane[plane_currIdx].bee[j].sost=std::rand()%9;*/
 
                 }
                 break;
             case 2:
-                if(plane[plane_currIdx].bee[j].y<hei-size_b){
-                    plane[plane_currIdx].bee[j].y++;
+                if(plane[plane_currIdx].bee[j].y <= hei - size_b - bee_speed){
+                    plane[plane_currIdx].bee[j].y += bee_speed;
 
                 }else{
-                    plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
+                    plane[plane_currIdx].bee[j].sost = 1;
+                    plane[plane_currIdx].bee[j].y -= bee_speed;
+                    /*plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
                     plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
-                    plane[plane_currIdx].bee[j].sost=std::rand()%9;
+                    plane[plane_currIdx].bee[j].sost=std::rand()%9;*/
 
                 }
                 break;
             case 3:
-                if(plane[plane_currIdx].bee[j].x > 0){
-                    plane[plane_currIdx].bee[j].x--;
+                if(plane[plane_currIdx].bee[j].x >= bee_speed){
+                    plane[plane_currIdx].bee[j].x -= bee_speed;
 
                 }else{
-                    plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
-                    plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
-                    plane[plane_currIdx].bee[j].sost=std::rand()%9;
+                    plane[plane_currIdx].bee[j].sost = 4;
+                    plane[plane_currIdx].bee[j].x += bee_speed;
+//                    plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
+//                    plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
+//                    plane[plane_currIdx].bee[j].sost=std::rand()%9;
 
                 }
                 break;
             case 4:
 
-                if(plane[plane_currIdx].bee[j].x<wid-size_b){
-                    plane[plane_currIdx].bee[j].x++;
-
+                if(plane[plane_currIdx].bee[j].x<=wid-size_b-bee_speed){
+                    plane[plane_currIdx].bee[j].x += bee_speed;
                 }else{
-                    plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
-                    plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
-                    plane[plane_currIdx].bee[j].sost=std::rand()%9;
+                    plane[plane_currIdx].bee[j].sost = 3;
+                    plane[plane_currIdx].bee[j].x -= bee_speed;
+//                    plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
+//                    plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
+//                    plane[plane_currIdx].bee[j].sost=std::rand()%9;
 
                 }
                 break;
-            case 5:
+            case 5:  // Вправо наверх
 
-                if((plane[plane_currIdx].bee[j].y>0)&&(plane[i].bee[j].x<wid-size_b)){
-                    plane[plane_currIdx].bee[j].x+=std::rand()%6;
-                    plane[plane_currIdx].bee[j].y-=std::rand()%6;
+                if((plane[plane_currIdx].bee[j].y>=bee_speed)&&(plane[plane_currIdx].bee[j].x<=wid-size_b-bee_speed)){
+                    if(bee_speed <= plane[plane_currIdx].bee[j].y){
+                        plane[plane_currIdx].bee[j].y -= bee_speed;
+                    }else{
+                        plane[plane_currIdx].bee[j].y = 0;
+                    }
+                    plane[plane_currIdx].bee[j].x += bee_speed;
+
+                }else if(plane[plane_currIdx].bee[j].x>=wid-size_b-bee_speed){
+
+                    plane[plane_currIdx].bee[j].sost = 6;
+                    //plane[plane_currIdx].bee[j].y -= bee_speed;//уголок
+                    plane[plane_currIdx].bee[j].x -= bee_speed;
+                    /*plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
+                    plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
+                    plane[plane_currIdx].bee[j].sost=std::rand()%9;*/
 
                 }else{
-                    plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
-                    plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
-                    plane[plane_currIdx].bee[j].sost=std::rand()%9;
 
+                    plane[plane_currIdx].bee[j].sost = 7;
+                    plane[plane_currIdx].bee[j].y += bee_speed;
+                    plane[plane_currIdx].bee[j].x += bee_speed;
                 }
                 break;
 
-            case 6:
+            case 6: // Влево наверх
 
-                if((plane[plane_currIdx].bee[j].y>0)&&(plane[i].bee[j].x>0)){
-                    plane[plane_currIdx].bee[j].x--;
-                    plane[plane_currIdx].bee[j].y--;
+                if((plane[plane_currIdx].bee[j].y>=bee_speed)&&(plane[plane_currIdx].bee[j].x>=bee_speed)){
+                    if(bee_speed <= plane[plane_currIdx].bee[j].x){
+                        plane[plane_currIdx].bee[j].x -= bee_speed;
+                    }else{
+                        plane[plane_currIdx].bee[j].x = 0;
+                    }
+                    if(bee_speed <= plane[plane_currIdx].bee[j].y){
+                        plane[plane_currIdx].bee[j].y -= bee_speed;
+                    }else{
+                        plane[plane_currIdx].bee[j].y = 0;
+                    }
 
+                }else if(plane[plane_currIdx].bee[j].y < bee_speed){
+                      plane[plane_currIdx].bee[j].sost = 8;
+                      plane[plane_currIdx].bee[j].y += bee_speed;
+                      //plane[plane_currIdx].bee[j].x -= bee_speed;
+//                    plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
+//                    plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
+//                    plane[plane_currIdx].bee[j].sost=std::rand()%9;
                 }else{
 
-                    plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
-                    plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
-                    plane[plane_currIdx].bee[j].sost=std::rand()%9;
+                    plane[plane_currIdx].bee[j].sost = 5;
+                    plane[plane_currIdx].bee[j].y -= bee_speed;
+                    //plane[plane_currIdx].bee[j].x += bee_speed;
                 }
                 break;
-            case 7:
+            case 7:  // Вправо вниз
 
-                if((plane[plane_currIdx].bee[j].y<hei-size_b)&&(plane[i].bee[j].x<wid-size_b)){
-                    plane[plane_currIdx].bee[j].x++;
-                    plane[plane_currIdx].bee[j].y++;
+                if((plane[plane_currIdx].bee[j].y<=hei-size_b-bee_speed)&&(plane[plane_currIdx].bee[j].x<=wid-size_b-bee_speed)){
+                    plane[plane_currIdx].bee[j].x += bee_speed;
+                    plane[plane_currIdx].bee[j].y += bee_speed;
+
+                }else if(plane[plane_currIdx].bee[j].x>=wid-size_b-bee_speed){
+
+                    plane[plane_currIdx].bee[j].sost = 8;
+                    //plane[plane_currIdx].bee[j].y += bee_speed;
+                    plane[plane_currIdx].bee[j].x -= bee_speed;
+//                    plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
+//                    plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
+//                    plane[plane_currIdx].bee[j].sost=std::rand()%9;
 
                 }else{
-                    plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
-                    plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
-                    plane[plane_currIdx].bee[j].sost=std::rand()%9;
-
+                    plane[plane_currIdx].bee[j].sost = 5;
+                    //plane[plane_currIdx].bee[j].y -= bee_speed;
+                    plane[plane_currIdx].bee[j].x += bee_speed;
                 }
                 break;
-            case 8:
-                if((plane[plane_currIdx].bee[j].y<hei-size_b)&&(plane[i].bee[j].x>0)){
-                    plane[plane_currIdx].bee[j].x--;
-                    plane[plane_currIdx].bee[j].y++;
+            case 8:  // Влево вниз
+                if((plane[plane_currIdx].bee[j].y<=hei-size_b-bee_speed)&&(plane[plane_currIdx].bee[j].x>=bee_speed)){
+                    plane[plane_currIdx].bee[j].x -= bee_speed;
+                    plane[plane_currIdx].bee[j].y += bee_speed;
+
+                }else if(plane[plane_currIdx].bee[j].x<bee_speed){
+
+
+                    plane[plane_currIdx].bee[j].sost = 7;
+                    //plane[plane_currIdx].bee[j].y += bee_speed;
+                    plane[plane_currIdx].bee[j].x += bee_speed;
+//                    plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
+//                    plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
+//                    plane[plane_currIdx].bee[j].sost=std::rand()%9;
 
                 }else{
-                    plane[plane_currIdx].bee[j].x=std::rand()%(wid-size_b);
-                    plane[plane_currIdx].bee[j].y=std::rand()%(hei-size_b);
-                    plane[plane_currIdx].bee[j].sost=std::rand()%9;
 
+                    plane[plane_currIdx].bee[j].sost = 6;
+                    //plane[plane_currIdx].bee[j].y -= bee_speed;
+                    plane[plane_currIdx].bee[j].x -= bee_speed;
                 }
                 break;
             default:
                 break;
             }
+//            if((plane[plane_currIdx].bee[j].y<=0)||(plane[plane_currIdx].bee[j].x<0)||(plane[plane_currIdx].bee[j].y>=hei+size_b)||(plane[plane_currIdx].bee[j].x>=wid+size_b)){
+//                //qDebug()<<"ERROR y - "<<plane[plane_currIdx].bee[j].y<<" x - "<<plane[plane_currIdx].bee[j].x;
+//            }
 
+        }
+        int ptr = std::rand()%9;
+        if(ptr == 2){
+            plane[plane_currIdx].bee[j].sost=std::rand()%9 + 1;
         }
 
 
@@ -1004,7 +1073,7 @@ void BugServer::process_f01(const QByteArray &message, QNetworkDatagram dm){
     pl.name = newPlayerName;
     pl.name_u8 = message.mid(3,strLength);
     pl.id_sesia = id_players;
-    pl.kol_pat=30;
+    pl.kol_pat=10;
     pl.playDm=dm;
     fillMessage02();
     Player.append(pl);
@@ -1049,6 +1118,7 @@ void BugServer::process_f09(const QByteArray &message, QNetworkDatagram dm){
         boom.y=y;
         boom.time=time + static_cast<quint8>(100u);
         boom.id_create = id_pl;
+        /////add_pic
         bomb.append(boom);
 
         message_f0a.resize(10);
@@ -1067,16 +1137,18 @@ void BugServer::process_f09(const QByteArray &message, QNetworkDatagram dm){
         }
 
 
-    }
-
-
-    if(Player[idx].kol_pat<=0){
-        Player[idx].kol_pat=10;
-        //qDebug()<<"Not patron ------------------------------------------------------------------";
-        fillMessage06();
     }else{
-        Player[idx].kol_pat--;
+        if(Player[idx].kol_pat<=0){
+            Player[idx].kol_pat=10;
+            qDebug()<<"Not patron ------------------------------------------------------------------";
+            fillMessage06();
+        }else{
+            Player[idx].kol_pat--;
+        }
     }
+
+
+
     int kill_bee[4] {0};
     bool control = false;
     //bool stopDbg = false;
