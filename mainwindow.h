@@ -92,7 +92,7 @@ private:
     QList<BuferBee>bufer_bee;
 
 //void keyPressEvent(QKeyEvent *event);
-    Chat *chat;
+    //Chat *chat;
 
     QImageReader *read_bee_right;
     QVector<QPixmap> bee_right;
@@ -117,6 +117,8 @@ private:
     QVector<QPixmap> max_boom;
     QTreeWidget *List;
 
+    const QString sndPath = QApplication::applicationDirPath()+QDir::separator()+QStringLiteral("sounds")+QDir::separator();
+
 
     bool create_server = false;
     bool create_client = false;
@@ -137,6 +139,12 @@ private:
 
     int idx=0;
     int score=0;
+    //////////////////////////////////////////////нужна норм перезарядка на сервере!!!
+    int f10_time_show = 10; //время показа предупреждения, заменить в 10f (сек)
+    bool on_reloading = false;
+    int number_of_ammo = 7;
+    int pic_rand_ammo = 0;
+    /////////////////////////////////////////////
 
     int bee_hide=0;
     int bee_show=0;
@@ -146,9 +154,8 @@ private:
 
     int x,y;
     int muz=0;
-    int n=7;
     bool f=false;
-    QSoundEffect effect[5];
+    QSoundEffect effect[8];
     QLabel *patron[7];
 
     QGraphicsPixmapItem* it_pix;
@@ -157,6 +164,8 @@ private:
     QList<QGraphicsPixmapItem*>item_pix;
     QList<int>status_bee;
     quint8 regular_time;
+
+    QMediaPlayer *music = new QMediaPlayer();
 
     QList<Players>Gamer;
 
@@ -177,19 +186,20 @@ private:
     QMediaPlayer player1;
     QString file[12];
     QTimer timer;
+    ///
     QTimer timer_1;
+    ///
     QTimer timer_pr;
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     QGraphicsSimpleTextItem *text_info;// = new QGraphicsSimpleTextItem();///Сделать добавление текста в сцену
 
     QPoint coord_of_sight;
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    int sch_process_10 = 501;
+    int sch_process_10 = (f10_time_show*1000)+1;////////////////////////////BOT ETO///////////////////////////////////////////////////////
     int bx=0,by=0;
     QTimer timer_bax;
     QPixmap *picture[12];
     QMutex argMutex;
-    bool u=false;
     void do_pix();
 //    void gameover();
     void close_do();
@@ -200,7 +210,7 @@ private:
 
 private slots:
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    void for_10(QPoint);
+    void for_10(QPoint p);
     void for_10_timer();
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     void go_bee();
@@ -218,7 +228,9 @@ private slots:
     void goto_xy();
     void add_server();
     void add_client();
-    void add_patron();
+    ///
+    void ammo_function();
+    ///
     void show_score();
     void send_message();
     void set_pos(QPoint p, bool sost);
